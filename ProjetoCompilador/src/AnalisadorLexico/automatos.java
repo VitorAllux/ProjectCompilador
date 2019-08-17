@@ -20,6 +20,32 @@ public class automatos {
 		
 	}
 	
+	public automatos() {
+		
+		tabelaSimbolos.put("program", "1");
+		tabelaSimbolos.put("label", "2");
+		tabelaSimbolos.put("const", "3");
+		tabelaSimbolos.put("if", "13");
+		tabelaSimbolos.put("+", "30");
+		tabelaSimbolos.put("begin", "6");
+		tabelaSimbolos.put("end", "7");
+		tabelaSimbolos.put("else", "15");
+		tabelaSimbolos.put("then", "14");
+		tabelaSimbolos.put(":=", "38");
+		tabelaSimbolos.put("=", "40");
+		tabelaSimbolos.put(">", "41");
+		tabelaSimbolos.put(">=", "42");
+		tabelaSimbolos.put("<", "43");
+		tabelaSimbolos.put("<=", "44");
+		tabelaSimbolos.put("<>", "45");
+		tabelaSimbolos.put(",", "46");
+		tabelaSimbolos.put(";", "47");
+		tabelaSimbolos.put("or", "22");
+		tabelaSimbolos.put("and", "23");
+		tabelaSimbolos.put("not", "24");
+		
+	}
+	
 	//if codigo23+1 then
 	
 	
@@ -43,6 +69,7 @@ public class automatos {
 					simbolo.setCodigo(getSymbolID(simbolo.getSimbolo()));
 					
 					simbols.add(simbolo);
+					simbolo = new pilha(0,  0,  "");
 				}									
 			}
 		}	
@@ -55,7 +82,10 @@ public class automatos {
 	
 	public Integer getSymbolID(String symbol) {
 		
-		return Integer.parseInt(tabelaSimbolos.get(symbol));
+		String str = tabelaSimbolos.get(symbol); 	
+		System.out.println("procurou "+symbol+" result " + str);
+		
+		return (str == "") ? 0 : Integer.parseInt(str);
 		
 		
 	}
