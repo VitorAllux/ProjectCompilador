@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
-public class automatos {
+public class Automatos {
 	
-	private Stack<pilha> simbols = new Stack<pilha>();
+	private Stack<Pilha> simbols = new Stack<Pilha>();
 	
 
 	private HashMap<String, String> tabelaSimbolos = new HashMap<String, String>(); 
@@ -28,7 +28,7 @@ public class automatos {
 
 
 
-	public Stack<pilha> splitSimbols(String str, int linha){
+	public Stack<Pilha> splitSimbols(String str, int linha){
 
 		String simbolo = "";
 		Character s;
@@ -78,7 +78,7 @@ public class automatos {
 	
 	private void addInStack(String str, int linha) {
 		
-		simbols.add(new pilha(getSymbolID(str), linha, str));
+		simbols.add(new Pilha(getSymbolID(str), linha, str));
 		
 	}
 
@@ -92,7 +92,7 @@ public class automatos {
 
 	}
 
-	public automatos() {
+	public Automatos() {
 
 		tabelaSimbolos.put("program", "1");
 		tabelaSimbolos.put("label", "2");

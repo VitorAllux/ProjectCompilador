@@ -1,12 +1,12 @@
 package AnalisadorLexico;
 
-public class pilha {
+public class Pilha {
 	
 	int codigo;
 	int linha;
 	String simbolo;
 	
-	pilha(int codigo, int linha, String simbolo){
+	Pilha(int codigo, int linha, String simbolo){
 		this.codigo = codigo;
 		this.simbolo = simbolo;
 		this.linha = linha;

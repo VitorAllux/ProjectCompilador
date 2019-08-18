@@ -2,17 +2,17 @@ package AnalisadorLexico;
 
 import java.util.Stack;
 
-public class main {
+public class Main {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		automatos auto = new automatos();
+		Automatos auto = new Automatos();
 		
-		Stack<pilha> lista = auto.splitSimbols("if 20 > 10 then begin", 1);
+		Stack<Pilha> lista = auto.splitSimbols("if 20 > 10 then begin", 1);
 		
 		String str = "";
 		
-		for(pilha pilha : lista) {
+		for(Pilha pilha : lista) {
 			str = str + ' ' + pilha.getSimbolo();		
 		}
 		
