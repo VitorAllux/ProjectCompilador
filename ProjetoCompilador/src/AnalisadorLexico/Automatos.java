@@ -1,18 +1,19 @@
 package AnalisadorLexico;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
 public class Automatos {
 	
-	private Stack<Pilha> simbols = new Stack<Pilha>();	
+	private Stack<Token> simbols = new Stack<Token>();	
 
 	private HashMap<String, String> tabelaSimbolos = new HashMap<String, String>(); 
 
 	public boolean nativeSymbols(Character s) {
 
-		return " ;,.+-/*()[]".indexOf(s) != -1;
+		return " 	;,.+-/*()[]".indexOf(s) != -1;
 
 	}
 
@@ -22,75 +23,82 @@ public class Automatos {
 
 	}
 
-	public Stack<Pilha> splitSimbols(String str, int linha){
+	public Stack<Token> splitSimbols(ArrayList<String> list){
 
 		String simbolo = "", combinado = "";
 		Character s;
+		int linha = 0;
 		boolean isLiteral = false, ignore = false;//, isLastIdentifier = false;
 
 		//"if (20 >= 10)<>(10 = 10) then begin"
-		for(int i = 0; i < str.length(); i++) {
-			s = str.charAt(i); 
-			
-			//Trata comentario
-			if(s=='('&&str.charAt(i+1)=='*') {
-				ignore = true;
-			}
-			if(ignore&&(s=='*'&&str.charAt(i+1)==')')) {
-				i++;
-				ignore = false;
-				continue;
-			}
-			if(ignore) {
-				continue;				
-			}
-			
-			                                          //nagativo seguido de digito    
-			if (!nativeSymbols(s)||isLiteral||((s == '-')&&(Character.isDigit(str.charAt(i+1))))) {
-				if(s == 39) {
-					isLiteral = !isLiteral;
-					if(!simbolo.isEmpty()) {
-						if(!isLiteral) {
-							simbolo = simbolo + Character.toString((char)39);
-						}
-						addInStack(simbolo, linha, !isLiteral);
-						simbolo = "";
-						if(!isLiteral) {
-							continue;							
-						}
-					}					
+		for(String str: list) {
+			simbolo = "";
+			combinado = "";
+			linha++;
+			for(int i = 0; i < str.length(); i++) {
+				s = str.charAt(i); 
+				
+				//Trata comentario
+				if(s=='('&&str.charAt(i+1)=='*') {
+					ignore = true;
+				}
+				if(ignore&&(s=='*'&&str.charAt(i+1)==')')) {
+					i++;
+					ignore = false;
+					continue;
+				}
+				if(ignore) {
+					continue;				
 				}
 				
-				if(nativeSequence(s)&&!isLiteral) {
-					combinado = combinado + s;
-					if(nativeSequence(str.charAt(i+1))) {
-						combinado = combinado + str.charAt(i+1);
-						i++;
+					
+				                                          //nagativo seguido de digito    
+				if (!nativeSymbols(s)||isLiteral||((s == '-')&&(Character.isDigit(str.charAt(i+1))))) {
+					if(s == 39) {
+						isLiteral = !isLiteral;
+						if(!simbolo.isEmpty()) {
+							if(!isLiteral) {
+								simbolo = simbolo + Character.toString((char)39);
+							}
+							addInStack(simbolo, linha, !isLiteral);
+							simbolo = "";
+							if(!isLiteral) {
+								continue;							
+							}
+						}					
 					}
+					
+					if(nativeSequence(s)&&!isLiteral) {
+						combinado = combinado + s;
+						if(nativeSequence(str.charAt(i+1))) {
+							combinado = combinado + str.charAt(i+1);
+							i++;
+						}
+						if(!simbolo.trim().isEmpty()) {
+							addInStack(simbolo, linha, false);
+							simbolo = "";
+						}
+						addInStack(combinado, linha, false);
+						combinado = "";					
+					}else {
+						simbolo = simbolo + s;
+						if(i+1 >= str.length()) {
+							addInStack(simbolo, linha, false);
+						}
+					}
+				}else {
 					if(!simbolo.trim().isEmpty()) {
 						addInStack(simbolo, linha, false);
+					}
+					if((!Character.isWhitespace(s))&&!(s.toString().indexOf("\t")>-1)) {
+						addInStack(s.toString(), linha, false);					
+					}
+						
 						simbolo = "";
-					}
-					addInStack(combinado, linha, false);
-					combinado = "";					
-				}else {
-					simbolo = simbolo + s;
-					if(i+1 >= str.length()) {
-						addInStack(simbolo, linha, false);
-					}
+						combinado = "";
 				}
-			}else {
-				if(!simbolo.trim().isEmpty()) {
-					addInStack(simbolo, linha, false);
-				}
-				if(!Character.isWhitespace(s)) {
-					addInStack(s.toString(), linha, false);					
-				}
-					
-					simbolo = "";
-					combinado = "";
 			}
-		}	
+		}
 
 		return simbols;
 
@@ -102,7 +110,7 @@ public class Automatos {
 			System.out.println("procurou '"+str+"' result 48");
 		}
 		
-		simbols.add(new Pilha(literal ? 48 : getSymbolID(str), linha, str));
+		simbols.add(new Token(literal ? 48 : getSymbolID(str), linha, str));
 		
 	}
 

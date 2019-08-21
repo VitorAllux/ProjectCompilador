@@ -1,7 +1,9 @@
 package AnalisadorLexico;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.TextArea;
 
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
@@ -21,14 +23,17 @@ import java.awt.event.ComponentEvent;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 
 public class Menu extends JFrame {
 
 	private JPanel contentPane;
-	private JTextArea areaDeTexto = new JTextArea();
+	public JTextArea textArea = new JTextArea();
 	private JInternalFrame internalFrame = new JInternalFrame("New JInternalFrame");
 	private String text;
+
+
 
 	/**
 	 * Launch the application.
@@ -51,7 +56,8 @@ public class Menu extends JFrame {
 	 */
 	public Menu() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 1020, 541);
+		setBounds(100, 100, 1100, 581);
+		setResizable(false);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -72,7 +78,8 @@ public class Menu extends JFrame {
 			});
 		
 		JMenuBar menuBar = new JMenuBar();
-		menuBar.setBounds(0, 0, 1004, 27);
+		menuBar.setBounds(0, 0, 1100, 27);
+		
 		contentPane.add(menuBar);
 		
 		JButton btnNewButton = new JButton("Search");
@@ -92,7 +99,7 @@ public class Menu extends JFrame {
 					}
 
 				
-				areaDeTexto.setText(text);
+					textArea.setText(text);
 				
 			}
 		});
@@ -100,12 +107,11 @@ public class Menu extends JFrame {
 		
 		//Layer
 		JLayeredPane layeredPane = new JLayeredPane();
-		layeredPane.setBounds(7, 30, 789, 354);
+		layeredPane.setBounds(0, 30, 789, 354);
 		
 		//editor de texto
-
-        JScrollPane painelComBarraDeRolagem = new JScrollPane(areaDeTexto);
-        TextLineNumber contadorLinhas = new TextLineNumber(areaDeTexto);
+        JScrollPane painelComBarraDeRolagem = new JScrollPane(textArea);
+        TextLineNumber contadorLinhas = new TextLineNumber(textArea);
         painelComBarraDeRolagem.setRowHeaderView(contadorLinhas);
         
         internalFrame.putClientProperty("JInternalFrame.isPalette", Boolean.TRUE);
@@ -114,8 +120,18 @@ public class Menu extends JFrame {
 		layeredPane.add(internalFrame);
 		internalFrame.setVisible(true);
 		contentPane.add(layeredPane);
-		
-
-        
 	}
+		
+		//Get text area
+		public ArrayList<String> getTextArea() {
+			ArrayList<String> lista = new ArrayList<>();
+			String texto = textArea.getText();
+			String[] aux;
+			aux = texto.split("\n");
+			for(int i=0; i<aux.length; i++) {
+				lista.add(aux[i]);
+				System.out.println(lista.get(i));
+			}
+			return lista;
+		}
 }
