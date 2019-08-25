@@ -13,14 +13,18 @@ public class Automatos {
 
 	public boolean nativeSymbols(Character s) {
 
-		return " 	;,.+-/*()[]".indexOf(s) != -1;
+		return " 	;,+-/*()[]$".indexOf(s) != -1;
 
 	}
 
 	public boolean nativeSequence(Character s) {
 
-		return ":=<>".indexOf(s) != -1;
+		return ".:=<>".indexOf(s) != -1;
 
+	}
+	
+	public boolean isLastPos(int pos, String str) {
+		return pos + 1 >= str.length();
 	}
 
 	public Stack<Token> splitSimbols(ArrayList<String> list){
@@ -58,7 +62,7 @@ public class Automatos {
 						isLiteral = !isLiteral;
 						if(!simbolo.isEmpty()) {
 							if(!isLiteral) {
-								simbolo = simbolo + Character.toString((char)39);
+								simbolo += Character.toString((char)39);
 							}
 							addInStack(simbolo, linha, !isLiteral);
 							simbolo = "";
@@ -69,10 +73,27 @@ public class Automatos {
 					}
 					
 					if(nativeSequence(s)&&!isLiteral) {
-						combinado = combinado + s;
-						if(nativeSequence(str.charAt(i+1))) {
-							combinado = combinado + str.charAt(i+1);
-							i++;
+						//Trata combinações de simbolos ex(>=, .., <>, :=)
+						combinado += s;
+						if(!isLastPos(i, str)) {
+							if(s == 46) {
+								if(str.charAt(i+1) == 46) {
+									combinado += str.charAt(i+1);
+									i++;
+								}
+							}else {
+								if(s == 58) {
+									if(str.charAt(i+1) == 61) {
+										combinado += str.charAt(i+1);
+										i++;
+									}
+								}else {							
+									if(nativeSequence(str.charAt(i+1))) {
+										combinado += str.charAt(i+1);
+										i++;
+									}
+								}
+							}
 						}
 						if(!simbolo.trim().isEmpty()) {
 							addInStack(simbolo, linha, false);
@@ -81,8 +102,8 @@ public class Automatos {
 						addInStack(combinado, linha, false);
 						combinado = "";					
 					}else {
-						simbolo = simbolo + s;
-						if(i+1 >= str.length()) {
+						simbolo += s;
+						if(isLastPos(i, str)) {
 							addInStack(simbolo, linha, false);
 						}
 					}
@@ -133,15 +154,33 @@ public class Automatos {
 		tabelaSimbolos.put("const", "3");
 		tabelaSimbolos.put("var", "4");
 		tabelaSimbolos.put("procedure", "5");
-		tabelaSimbolos.put("integer", "8");
-		tabelaSimbolos.put("if", "13");
-		tabelaSimbolos.put("+", "30");
-		tabelaSimbolos.put("readln", "20");
-		tabelaSimbolos.put("call", "11");
 		tabelaSimbolos.put("begin", "6");
 		tabelaSimbolos.put("end", "7");
-		tabelaSimbolos.put("else", "15");
+		tabelaSimbolos.put("integer", "8");
+		tabelaSimbolos.put("array", "9");
+		tabelaSimbolos.put("of", "10");
+		tabelaSimbolos.put("call", "11");
+		tabelaSimbolos.put("goto", "12");
+		tabelaSimbolos.put("if", "13");
 		tabelaSimbolos.put("then", "14");
+		tabelaSimbolos.put("else", "15");
+		tabelaSimbolos.put("while", "16");
+		tabelaSimbolos.put("readln", "20");
+		tabelaSimbolos.put("writeln", "21");
+		tabelaSimbolos.put("or", "22");
+		tabelaSimbolos.put("and", "23");
+		tabelaSimbolos.put("not", "24");
+		//25 - Identificador (tratado posteriormente)
+		//26 - Inteiro (tratado posteriormente)
+		tabelaSimbolos.put("for", "27");
+		tabelaSimbolos.put("to", "28");
+		tabelaSimbolos.put("case", "29");
+		tabelaSimbolos.put("+", "30");
+		tabelaSimbolos.put("-", "31");
+		tabelaSimbolos.put("*", "32");
+		tabelaSimbolos.put("/", "33");
+		tabelaSimbolos.put("[", "34");
+		tabelaSimbolos.put("]", "35");
 		tabelaSimbolos.put("(", "36");
 		tabelaSimbolos.put(")", "37");
 		tabelaSimbolos.put(":=", "38");
@@ -154,11 +193,11 @@ public class Automatos {
 		tabelaSimbolos.put("<>", "45");
 		tabelaSimbolos.put(",", "46");
 		tabelaSimbolos.put(";", "47");
-		tabelaSimbolos.put("or", "22");
-		tabelaSimbolos.put("and", "23");
-		tabelaSimbolos.put("not", "24");
-		tabelaSimbolos.put("-", "31");
-
+		//48 - literal (tratado posteriormente)
+		tabelaSimbolos.put(".", "49");
+		tabelaSimbolos.put("..", "50");
+		tabelaSimbolos.put("$", "51");
+		
 	}
 
 }
