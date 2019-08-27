@@ -6,6 +6,12 @@ public class Erro {
 	private int linha;
 	private String tipo;
 
+	public Erro(String MsgError, String tipo, int linha) {
+		this.MsgError = MsgError;
+		this.linha = linha;
+		this.tipo = tipo;
+	}
+
 	public String getMsgError() {
 		return MsgError;
 	}

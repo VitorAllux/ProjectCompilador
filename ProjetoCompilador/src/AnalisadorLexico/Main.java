@@ -7,12 +7,12 @@ public class Main {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		Automatos auto = new Automatos();
+		Automato auto = new Automato(null);
 		
 		Menu menu = new Menu();
 		menu.setVisible(true);
 		ArrayList<String> list = new ArrayList<String>();
-		menu.textArea.setText("(*TESTE - Exemplo Válido*)\n" + 
+		menu.editor.setText("(*TESTE - Exemplo Válido*)\n" + 
 				"PROGRAM TESTE123;\n" + 
 				" 'literal teste'	LABEL\n" + 
 				"		label_a, label_b; \n" + 

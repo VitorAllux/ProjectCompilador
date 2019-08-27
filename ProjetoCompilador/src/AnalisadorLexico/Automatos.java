@@ -5,15 +5,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
-public class Automato {
+public class Automatos {
 	
-	private Stack<Token> simbols = new Stack<Token>();
-	private ArrayList<Erro> erros = new ArrayList<Erro>();
-	private int linha;
-	private Menu frame;
-	
-	
-	
+	private Stack<Token> simbols = new Stack<Token>();	
+
 	private HashMap<String, String> tabelaSimbolos = new HashMap<String, String>(); 
 
 	public boolean nativeSymbols(Character s) {
@@ -37,15 +32,13 @@ public class Automato {
 		String simbolo = "", combinado = "";
 		Character s;
 		int linha = 0;
-		boolean isLiteral = false, ignore = false;
-				//, isLastIdentifier = false;
+		boolean isLiteral = false, ignore = false;//, isLastIdentifier = false;
 
-				//"if (20 >= 10)<>(10 = 10) then begin"
+		//"if (20 >= 10)<>(10 = 10) then begin"
 		for(String str: list) {
 			simbolo = "";
 			combinado = "";
 			linha++;
-			this.linha = linha;
 			for(int i = 0; i < str.length(); i++) {
 				s = str.charAt(i); 
 				
@@ -63,7 +56,7 @@ public class Automato {
 				}
 				
 					
-				                                   //nagativo seguido de digito    
+				                                          //nagativo seguido de digito    
 				if (!nativeSymbols(s)||isLiteral||((s == '-')&&(Character.isDigit(str.charAt(i+1))))) {
 					if(s == 39) {
 						isLiteral = !isLiteral;
@@ -125,23 +118,11 @@ public class Automato {
 						simbolo = "";
 						combinado = "";
 				}
-				if(!erros.isEmpty()) {
-					break;
-				}
-			}
-			if(!erros.isEmpty()) {
-				break;
 			}
 		}
 
-		if(!erros.isEmpty()) {
-			frame.printError(erros);
-			return null;
-		}else {
-			return simbols;
-		}
+		return simbols;
 
-		
 	}
 	
 	private void addInStack(String str, int linha, boolean literal) {
@@ -160,24 +141,14 @@ public class Automato {
 		if(str == null) {
 			str = (symbol.matches("-?\\d+")) ? "26" : "25"; 			
 		}
-		
 		System.out.println("procurou '"+symbol+"' result " + str);
-		
-		if(str == "26") {
-			int valor = Integer.parseInt(symbol);
-			if((valor>32767)||(valor<-32767)) {
-				erros.add(new Erro("Numero fora de escala", "interno", linha));
-			}
-		}
 
 		return Integer.parseInt(str);
 
 	}
 
-	public Automato(Menu menu) {
+	public Automatos() {
 
-		frame = menu;
-		
 		tabelaSimbolos.put("program", "1");
 		tabelaSimbolos.put("label", "2");
 		tabelaSimbolos.put("const", "3");
