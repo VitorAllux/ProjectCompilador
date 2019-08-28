@@ -136,6 +136,7 @@ public class Automato {
 
 		if(!erros.isEmpty()) {
 			frame.printError(erros);
+			frame.newText(erros);
 			return null;
 		}else {
 			return simbols;
