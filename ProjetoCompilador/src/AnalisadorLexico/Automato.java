@@ -18,7 +18,7 @@ public class Automato {
 
 	public boolean nativeSymbols(Character s) {
 
-		return " 	;,+-/*()[]$".indexOf(s) != -1;
+		return " 	;,+-/*()[]$".indexOf(s) != -1;		
 
 	}
 
@@ -60,9 +60,7 @@ public class Automato {
 				}
 				if(ignore) {
 					continue;				
-				}
-				
-					
+				}					
 				                                   //nagativo seguido de digito    
 				if (!nativeSymbols(s)||isLiteral||((s == '-')&&(Character.isDigit(str.charAt(i+1))))) {
 					if(s == 39) {
@@ -104,13 +102,13 @@ public class Automato {
 						}
 						if(!simbolo.trim().isEmpty()) {
 							addInStack(simbolo, linha, false);
-							simbolo = "";
 						}
+						simbolo = "";
 						addInStack(combinado, linha, false);
 						combinado = "";					
 					}else {
 						simbolo += s;
-						if(isLastPos(i, str)) {
+						if(isLastPos(i, str)&&!simbolo.trim().isEmpty()) {
 							addInStack(simbolo, linha, false);
 						}
 					}
@@ -118,12 +116,11 @@ public class Automato {
 					if(!simbolo.trim().isEmpty()) {
 						addInStack(simbolo, linha, false);
 					}
+					simbolo = "";					
 					if((!Character.isWhitespace(s))&&!(s.toString().indexOf("\t")>-1)) {
 						addInStack(s.toString(), linha, false);					
 					}
-						
-						simbolo = "";
-						combinado = "";
+					combinado = "";
 				}
 				if(!erros.isEmpty()) {
 					break;
