@@ -10,26 +10,24 @@ public class Automato {
 	private Stack<Token> simbols = new Stack<Token>();
 	private ArrayList<Erro> erros = new ArrayList<Erro>();
 	private int linha;
-	private Menu frame;
-	
-	
+	private Menu frame;	
 	
 	private HashMap<String, String> tabelaSimbolos = new HashMap<String, String>(); 
 
 	public boolean nativeSymbols(Character s) {
-
-		return " 	;,+-/*()[]$".indexOf(s) != -1;		
-
+		return " 	;,+-/*()[]$".indexOf(s) != -1;
 	}
 
 	public boolean nativeSequence(Character s) {
-
 		return ".:=<>".indexOf(s) != -1;
-
 	}
 	
 	public boolean isLastPos(int pos, String str) {
 		return pos + 1 >= str.length();
+	}
+	
+	private boolean isEmptyChar(Character c){
+		return c.toString().trim().isEmpty();		
 	}
 
 	public Stack<Token> splitSimbols(ArrayList<String> list){
@@ -38,16 +36,21 @@ public class Automato {
 		Character s;
 		int linha = 0;
 		boolean isLiteral = false, ignore = false;
-				//, isLastIdentifier = false;
-
-				//"if (20 >= 10)<>(10 = 10) then begin"
+		
+		//percorre todas linhas
 		for(String str: list) {
 			simbolo = "";
 			combinado = "";
 			linha++;
 			this.linha = linha;
+			//percorre todos caracteres
 			for(int i = 0; i < str.length(); i++) {
 				s = str.charAt(i); 
+				
+				//Comentario e Literais não finalizados - Erro
+				if(isLastPos(i, str)&&(isLiteral||(ignore&&list.size()==linha))) {
+					erros.add(new Erro((isLiteral ? "literal" : "cometario") + " não finalizado", "interno", linha));
+				}
 				
 				//Trata comentario
 				if(s=='('&&str.charAt(i+1)=='*') {
@@ -63,6 +66,7 @@ public class Automato {
 				}					
 				                                   //nagativo seguido de digito    
 				if (!nativeSymbols(s)||isLiteral||((s == '-')&&(Character.isDigit(str.charAt(i+1))))) {
+					//Inicia e fecha literais
 					if(s == 39) {
 						isLiteral = !isLiteral;
 						if(!simbolo.isEmpty()) {
@@ -100,6 +104,7 @@ public class Automato {
 								}
 							}
 						}
+						//Finaliza simbolos pendentes e Simbolos combinados feitos
 						if(!simbolo.trim().isEmpty()) {
 							addInStack(simbolo, linha, false);
 						}
@@ -107,17 +112,23 @@ public class Automato {
 						addInStack(combinado, linha, false);
 						combinado = "";					
 					}else {
-						simbolo += s;
+						
+						//Acumula literal ou simbolos e Força o fechamento do ultimo simbolo da linha
+						if(isLiteral||!isEmptyChar(s)) {
+							simbolo += s;
+						}
 						if(isLastPos(i, str)&&!simbolo.trim().isEmpty()) {
 							addInStack(simbolo, linha, false);
 						}
 					}
 				}else {
+					//Finaliza simbolos pendentes
 					if(!simbolo.trim().isEmpty()) {
 						addInStack(simbolo, linha, false);
 					}
-					simbolo = "";					
-					if((!Character.isWhitespace(s))&&!(s.toString().indexOf("\t")>-1)) {
+					simbolo = "";				
+					//Finaliza o caracter especial sem combinação
+					if(!isEmptyChar(s)) {
 						addInStack(s.toString(), linha, false);					
 					}
 					combinado = "";
@@ -137,19 +148,15 @@ public class Automato {
 			return null;
 		}else {
 			return simbols;
-		}
-
-		
+		}		
 	}
 	
-	private void addInStack(String str, int linha, boolean literal) {
-		
+	private void addInStack(String str, int linha, boolean literal) {		
 		if(literal) {
 			System.out.println("procurou '"+str+"' result 48");
 		}
 		
-		simbols.add(new Token(literal ? 48 : getSymbolID(str), linha, str));
-		
+		simbols.add(new Token(literal ? 48 : getSymbolID(str), linha, str));		
 	}
 
 	public Integer getSymbolID(String symbol) {
@@ -166,10 +173,14 @@ public class Automato {
 			if((valor>32767)||(valor<-32767)) {
 				erros.add(new Erro("Numero fora de escala", "interno", linha));
 			}
+		} else {
+			if(str == "25") {
+				if(!Character.isAlphabetic(symbol.charAt(0))) {
+					erros.add(new Erro("Indentificador com inicio invalido: "+symbol.charAt(0), "interno", linha));
+				}
+			}
 		}
-
 		return Integer.parseInt(str);
-
 	}
 
 	public Automato(Menu menu) {
