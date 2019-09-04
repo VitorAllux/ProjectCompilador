@@ -49,7 +49,7 @@ public class Menu extends JFrame {
 	private DefaultTableModel model;
 	private JTable tabela;
 
-	//main
+	// main
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -102,15 +102,34 @@ public class Menu extends JFrame {
 		scrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 		this.getContentPane().add(scrollPane1);
 
-		// botões
+		// Botões
+		
+		//botão new
+		
+		btnNew = new JButton("Novo",
+				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\novo.png"));
+		btnNew.setBounds(5, 3, 90, 25);
+		btnNew.setBorder(BorderFactory.createLineBorder(Color.black));
+		btnNew.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				
+				editor.setText(null);
+				console1.setText(null);
+				model.setRowCount(0);
+			}
+		});
+		contentPane.add(btnNew);
 
+		// botão Buscar
+		
 		btnSearch = new JButton("buscar",
 				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\localizar.png"));
-		btnSearch.setBounds(5, 3, 120, 25);
+		btnSearch.setBounds(btnNew.getWidth()*2 + 15, 3, btnNew.getWidth(), 25);
 		btnSearch.setBorder(BorderFactory.createLineBorder(Color.black));
 		btnSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
+				
 				JFileChooser chooser = new JFileChooser();
 				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 				chooser.setCurrentDirectory(new File("Documentos"));
@@ -133,14 +152,14 @@ public class Menu extends JFrame {
 		
 		btnRun = new JButton("Executar",
 				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\avancar.png"));
-		btnRun.setBounds(btnSearch.getWidth() + 10, 3, btnSearch.getWidth(), 25);
+		btnRun.setBounds(btnNew.getWidth() + 10, 3, btnNew.getWidth(), 25);
 		btnRun.setBorder(BorderFactory.createLineBorder(Color.black));
 		btnRun.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				console1.setText(null);
 				console1.append(Color.BLUE, "Executando", true);
-				String aux = editor.getText();
+				String aux = editor.getText().replaceAll("\r", "");
 				editor.setText(null);
 				editor.append(Color.black, aux, false);
 				if (!editor.getText().isEmpty()) {
@@ -165,91 +184,50 @@ public class Menu extends JFrame {
 		// botão salvar
 		
 		btnSave = new JButton("Salvar",
-				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\avancar.png"));
-		btnSave.setBounds(btnSearch.getWidth() + 10, 3, btnSearch.getWidth(), 25);
+				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\salvar.png"));
+		btnSave.setBounds(btnNew.getWidth()*3 + 20, 3, btnNew.getWidth(), 25);
 		btnSave.setBorder(BorderFactory.createLineBorder(Color.black));
 		btnSave.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				console1.setText(null);
-				console1.append(Color.BLUE, "Executando", true);
-				String aux = editor.getText();
-				editor.setText(null);
-				editor.append(Color.black, aux, false);
-				if (!editor.getText().isEmpty()) {
-					model.setRowCount(0);
-					Automato automato = new Automato(menu);
-					tokens = automato.splitSimbols(getTextArea());
-					if (tokens != null) {
-						for (Token token : tokens) {
-							model.addRow(new String[] { Integer.toString(token.getCodigo()),
-									Integer.toString(token.getLinha()), token.getSimbolo() });
+				
+				JFileChooser chooser = new JFileChooser();
+				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				chooser.setCurrentDirectory(new File("Documentos"));
+				
+				int op;
+				String name;
+				File arq;
+				if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+					op = JOptionPane.showConfirmDialog(null, "Deseja uma cópia salva neste diretório?", "criar diretório",  JOptionPane.YES_NO_OPTION);
+					if(op == 0) {
+						name = JOptionPane.showInputDialog("Informe o nome do arquivo");
+						arq = new File(chooser.getSelectedFile().getPath() + "\\" + name);
+						
+						if(arq.exists()) {
+							JOptionPane.showMessageDialog(null, "Arquivo com o mesmo nome já existente");
 						}
+						else {
+							try {
+								arq.createNewFile();
+								FileManipulator.fileWrite(arq.getAbsolutePath(), editor.getText());
+							} catch (IOException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+						}
+						
 					}
-				} else {
-					JOptionPane.showMessageDialog(null, "Campo de texto vazio");
 				}
-				console1.append(Color.blue, "\nFinalizado", true);
-
 			}
 		});
 		contentPane.add(btnSave);
+		
 
 
 		// editor
-		
-		final StyleContext cont = StyleContext.getDefaultStyleContext();
-        final javax.swing.text.AttributeSet attr = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, Color.RED);
-        final javax.swing.text.AttributeSet attrGreen = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, Color.MAGENTA);
-        final javax.swing.text.AttributeSet attrBlack = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, Color.BLACK);
-        DefaultStyledDocument doc = new DefaultStyledDocument() {
-            public void insertString (int offset, String str, javax.swing.text.AttributeSet a) throws BadLocationException {
-                super.insertString(offset, str, a);
-
-                String text = getText(0, getLength());
-                int before = findLastNonWordChar(text, offset);
-                if (before < 0) before = 0;
-                int after = findFirstNonWordChar(text, offset + str.length());
-                int wordL = before;
-                int wordR = before;
-
-                while (wordR <= after) {
-                    if (wordR == after || String.valueOf(text.charAt(wordR)).matches("\\W")) {
-                        if (text.substring(wordL, wordR).matches("(\\W)*(begin|end|for|if)")) {
-                            setCharacterAttributes(wordL, wordR - wordL, attr, false);
-                        }else {
-                        	if (text.substring(wordL, wordR).matches("(\\D)*(-)?([0-9])+")) {
-                                setCharacterAttributes(wordL, wordR - wordL, attrGreen, false);                        		
-                        	} else {
-                                setCharacterAttributes(wordL, wordR - wordL, attrBlack, false);
-                            }
-
-                        }
-                        
-                        wordL = wordR;
-                    }
-                    wordR++;
-                }
-            }
-
-            public void remove (int offs, int len) throws BadLocationException {
-                super.remove(offs, len);
-
-                String text = getText(0, getLength());
-                int before = findLastNonWordChar(text, offs);
-                if (before < 0) before = 0;
-                int after = findFirstNonWordChar(text, offs);
-
-                if (text.substring(before, after).matches("(\\W)*(begin|end|for|if)")) {
-                    setCharacterAttributes(before, after - before, attr, false);
-                } else {
-                    setCharacterAttributes(before, after - before, attrBlack, false);
-                }
-            }
-        };
 
 		editor = new ColorPane();
-		editor.setStyledDocument(doc);
 		editor.setBorder(BorderFactory.createLineBorder(Color.black));
 		scrollPane3 = new JScrollPane(editor);
 		TextLineNumber contadorLinhas = new TextLineNumber(editor);
@@ -294,8 +272,6 @@ public class Menu extends JFrame {
 
 	// setar novo texto
 
-
-
 	public void newText(ArrayList<Erro> erros) {
 		ArrayList<String> textList = getTextArea();
 		editor.setText(null);
@@ -309,24 +285,5 @@ public class Menu extends JFrame {
 			i++;
 		}
 	}
-	
-	private int findLastNonWordChar (String text, int index) {
-        while (--index >= 0) {
-            if (String.valueOf(text.charAt(index)).matches("\\W")) {
-                break;
-            }
-        }
-        return index;
-    }
-
-    private int findFirstNonWordChar (String text, int index) {
-        while (index < text.length()) {
-            if (String.valueOf(text.charAt(index)).matches("\\W")) {
-                break;
-            }
-            index++;
-        }
-        return index;
-    }
 
 }
