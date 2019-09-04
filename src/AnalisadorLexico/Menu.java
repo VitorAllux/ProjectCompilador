@@ -39,7 +39,7 @@ public class Menu extends JFrame {
 
 	public JScrollPane scrollPane1, scrollPane2, scrollPane3;
 	private String text;
-	private JButton btnSearch, btnRun, btnDebug;
+	private JButton btnSearch, btnRun, btnSave, btnNew;
 	private Stack<Token> tokens = new Stack<Token>();
 	private Menu menu = this;
 	public String aux = new String();
@@ -129,6 +129,8 @@ public class Menu extends JFrame {
 		});
 		contentPane.add(btnSearch);
 
+		// botão executar
+		
 		btnRun = new JButton("Executar",
 				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\avancar.png"));
 		btnRun.setBounds(btnSearch.getWidth() + 10, 3, btnSearch.getWidth(), 25);
@@ -159,6 +161,40 @@ public class Menu extends JFrame {
 			}
 		});
 		contentPane.add(btnRun);
+		
+		// botão salvar
+		
+		btnSave = new JButton("Salvar",
+				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\avancar.png"));
+		btnSave.setBounds(btnSearch.getWidth() + 10, 3, btnSearch.getWidth(), 25);
+		btnSave.setBorder(BorderFactory.createLineBorder(Color.black));
+		btnSave.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				console1.setText(null);
+				console1.append(Color.BLUE, "Executando", true);
+				String aux = editor.getText();
+				editor.setText(null);
+				editor.append(Color.black, aux, false);
+				if (!editor.getText().isEmpty()) {
+					model.setRowCount(0);
+					Automato automato = new Automato(menu);
+					tokens = automato.splitSimbols(getTextArea());
+					if (tokens != null) {
+						for (Token token : tokens) {
+							model.addRow(new String[] { Integer.toString(token.getCodigo()),
+									Integer.toString(token.getLinha()), token.getSimbolo() });
+						}
+					}
+				} else {
+					JOptionPane.showMessageDialog(null, "Campo de texto vazio");
+				}
+				console1.append(Color.blue, "\nFinalizado", true);
+
+			}
+		});
+		contentPane.add(btnSave);
+
 
 		// editor
 		
