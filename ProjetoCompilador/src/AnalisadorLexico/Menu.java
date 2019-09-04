@@ -5,11 +5,13 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.ReplicateScaleFilter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Stack;
 
+import javax.print.attribute.AttributeSet;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -25,6 +27,10 @@ import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 
 public class Menu extends JFrame {
 
@@ -128,14 +134,13 @@ public class Menu extends JFrame {
 		btnRun.setBounds(btnSearch.getWidth() + 10, 3, btnSearch.getWidth(), 25);
 		btnRun.setBorder(BorderFactory.createLineBorder(Color.black));
 		btnRun.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				console1.setText(null);
-				console1.append(Color.BLUE, "Executando");
+				console1.append(Color.BLUE, "Executando", true);
 				String aux = editor.getText();
 				editor.setText(null);
-				editor.append(Color.black, aux);
+				editor.append(Color.black, aux, false);
 				if (!editor.getText().isEmpty()) {
 					model.setRowCount(0);
 					Automato automato = new Automato(menu);
@@ -149,15 +154,66 @@ public class Menu extends JFrame {
 				} else {
 					JOptionPane.showMessageDialog(null, "Campo de texto vazio");
 				}
-				console1.append(Color.blue, "\nFinalizado");
+				console1.append(Color.blue, "\nFinalizado", true);
 
 			}
 		});
 		contentPane.add(btnRun);
 
 		// editor
+		
+		final StyleContext cont = StyleContext.getDefaultStyleContext();
+        final javax.swing.text.AttributeSet attr = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, Color.RED);
+        final javax.swing.text.AttributeSet attrGreen = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, Color.MAGENTA);
+        final javax.swing.text.AttributeSet attrBlack = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, Color.BLACK);
+        DefaultStyledDocument doc = new DefaultStyledDocument() {
+            public void insertString (int offset, String str, javax.swing.text.AttributeSet a) throws BadLocationException {
+                super.insertString(offset, str, a);
+
+                String text = getText(0, getLength());
+                int before = findLastNonWordChar(text, offset);
+                if (before < 0) before = 0;
+                int after = findFirstNonWordChar(text, offset + str.length());
+                int wordL = before;
+                int wordR = before;
+
+                while (wordR <= after) {
+                    if (wordR == after || String.valueOf(text.charAt(wordR)).matches("\\W")) {
+                        if (text.substring(wordL, wordR).matches("(\\W)*(begin|end|for|if)")) {
+                            setCharacterAttributes(wordL, wordR - wordL, attr, false);
+                        }else {
+                        	if (text.substring(wordL, wordR).matches("(\\D)*(-)?([0-9])+")) {
+                                setCharacterAttributes(wordL, wordR - wordL, attrGreen, false);                        		
+                        	} else {
+                                setCharacterAttributes(wordL, wordR - wordL, attrBlack, false);
+                            }
+
+                        }
+                        
+                        wordL = wordR;
+                    }
+                    wordR++;
+                }
+            }
+
+            public void remove (int offs, int len) throws BadLocationException {
+                super.remove(offs, len);
+
+                String text = getText(0, getLength());
+                int before = findLastNonWordChar(text, offs);
+                if (before < 0) before = 0;
+                int after = findFirstNonWordChar(text, offs);
+
+                if (text.substring(before, after).matches("(\\W)*(begin|end|for|if)")) {
+                    setCharacterAttributes(before, after - before, attr, false);
+                } else {
+                    setCharacterAttributes(before, after - before, attrBlack, false);
+                }
+            }
+        };
 
 		editor = new ColorPane();
+		editor.setStyledDocument(doc);
 		editor.setBorder(BorderFactory.createLineBorder(Color.black));
 		scrollPane3 = new JScrollPane(editor);
 		TextLineNumber contadorLinhas = new TextLineNumber(editor);
@@ -196,28 +252,45 @@ public class Menu extends JFrame {
 		for (Erro bug : erros) {
 			// console1.setText(console1.getText()+ "\n" + "Error: " + bug.getMsgError()+ "
 			// line: " + bug.getLinha() + "\n");
-			console1.append(Color.red, "Error: " + bug.getMsgError() + " line: " + bug.getLinha() + "\n");
+			console1.append(Color.red, "Erro: " + bug.getMsgError() + " linha: " + bug.getLinha() + "\n", true);
 		}
 	}
 
 	// setar novo texto
+
+
 
 	public void newText(ArrayList<Erro> erros) {
 		ArrayList<String> textList = getTextArea();
 		editor.setText(null);
 		int i = 1;
 		for (String text : textList) {
-			for (Erro bug : erros) {
-				if (i == bug.getLinha()) {
-					editor.append(Color.RED, text + "     <------ ERROR");
-				} else {
-					editor.append(Color.black, text);
-					;
-				}
-				i++;
+			if (i == erros.get(0).getLinha()) {
+				editor.append(Color.RED, text, true);
+			} else {
+				editor.append(Color.black, text, true);
 			}
-
+			i++;
 		}
 	}
+	
+	private int findLastNonWordChar (String text, int index) {
+        while (--index >= 0) {
+            if (String.valueOf(text.charAt(index)).matches("\\W")) {
+                break;
+            }
+        }
+        return index;
+    }
+
+    private int findFirstNonWordChar (String text, int index) {
+        while (index < text.length()) {
+            if (String.valueOf(text.charAt(index)).matches("\\W")) {
+                break;
+            }
+            index++;
+        }
+        return index;
+    }
 
 }

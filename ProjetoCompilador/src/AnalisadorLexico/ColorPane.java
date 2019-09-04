@@ -10,7 +10,7 @@ import javax.swing.text.StyleContext;
 
 public class ColorPane extends JTextPane {
 	
-    public void append(Color cor, String text) {
+    public void append(Color cor, String text, Boolean quebraLinha) {
 
         StyleContext sc = StyleContext.getDefaultStyleContext();
         AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY,StyleConstants.Foreground, cor);
@@ -19,6 +19,8 @@ public class ColorPane extends JTextPane {
         setCaretPosition(len); 
         setCharacterAttributes(aset, false);
         setCharacterAttributes(aset2, false);
-        replaceSelection(text.concat("\n")); 
+
+        replaceSelection(text); 
     }
+    
 }
