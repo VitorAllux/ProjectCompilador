@@ -135,17 +135,14 @@ public class Menu extends JFrame {
 				chooser.setCurrentDirectory(new File("Documentos"));
 
 				try {
-					if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+					if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
 						text = new FileManipulator().fileRead(chooser.getSelectedFile().getPath());
-						editor.setText(text);
-					}
-
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 
-
+				editor.setText(text);
 
 			}
 		});
@@ -162,7 +159,7 @@ public class Menu extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				console1.setText(null);
 				console1.append(Color.BLUE, "Executando", true);
-				String aux = editor.getText().replaceAll("\r\r", "");
+				String aux = editor.getText().replaceAll("\r", "");
 				editor.setText(null);
 				editor.append(Color.black, aux, false);
 				if (!editor.getText().isEmpty()) {
@@ -281,10 +278,9 @@ public class Menu extends JFrame {
 		int i = 1;
 		for (String text : textList) {
 			if (i == erros.get(0).getLinha()) {
-				editor.appendError(Color.lightGray, text+"\n");
+				editor.append(Color.RED, text, true);
 			} else {
-				editor.append(Color.white, text, true);
-
+				editor.append(Color.black, text, true);
 			}
 			i++;
 		}

@@ -21,7 +21,7 @@ public class ColorPane extends JTextPane {
     final javax.swing.text.AttributeSet attr = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, Color.RED);
     final javax.swing.text.AttributeSet attrGreen = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, Color.MAGENTA);
     final javax.swing.text.AttributeSet attrBlack = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, Color.BLACK);
-
+    
     //Styled Document
     DefaultStyledDocument doc = new DefaultStyledDocument() {
         public void insertString (int offset, String str, javax.swing.text.AttributeSet a) throws BadLocationException {
@@ -36,7 +36,7 @@ public class ColorPane extends JTextPane {
 
             while (wordR <= after) {
                 if (wordR == after || String.valueOf(text.charAt(wordR)).matches("\\W")) {
-                    if (text.substring(wordL, wordR).matches("(?i)^((\\W)*(begin|end|for|if|int|const|var)).*")) {
+                    if (text.substring(wordL, wordR).matches("(\\W)*(begin|end|for|if)")) {
                         setCharacterAttributes(wordL, wordR - wordL, attr, false);
                     }else {
                     	if (text.substring(wordL, wordR).matches("(\\D)*(-)?([0-9])+")) {
@@ -44,7 +44,7 @@ public class ColorPane extends JTextPane {
                     	} else {
                             setCharacterAttributes(wordL, wordR - wordL, attrBlack, false);
                         }
-                    	//(?i)^(?!kb).*
+
                     }
                     
                     wordL = wordR;
@@ -60,6 +60,7 @@ public class ColorPane extends JTextPane {
             int before = findLastNonWordChar(text, offs);
             if (before < 0) before = 0;
             int after = findFirstNonWordChar(text, offs);
+
             if (text.substring(before, after).matches("(\\W)*(begin|end|for|if)")) {
                 setCharacterAttributes(before, after - before, attr, false);
             } else {
@@ -88,33 +89,19 @@ public class ColorPane extends JTextPane {
 	}
 
 	
-	
 	// Função de append, "concatenar string no textpane"
     public void append(Color cor, String text, Boolean quebraLinha) {
-        AttributeSet aset = cont.addAttribute(SimpleAttributeSet.EMPTY,StyleConstants.Foreground, cor);
-        AttributeSet aset2 = cont.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Bold, false);
-        AttributeSet aset3 = cont.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Background, Color.white);
+
+        StyleContext sc = StyleContext.getDefaultStyleContext();
+        AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY,StyleConstants.Foreground, cor);
+        AttributeSet aset2 = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Italic, true);
         int len = getDocument().getLength(); 
         setCaretPosition(len); 
         setCharacterAttributes(aset, false);
         setCharacterAttributes(aset2, false);
-        setCharacterAttributes(aset3, false);
-        if(quebraLinha) {
-        	replaceSelection(text + "\n"); 
-        }
-        else {
-        	replaceSelection(text);
-        }
+
+        replaceSelection(text); 
     }
-    
-    public void appendError(Color cor, String text) {
-        AttributeSet aset = cont.addAttribute(SimpleAttributeSet.EMPTY,StyleConstants.Background, cor);
-        AttributeSet aset2 = cont.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Bold, true);
-        int len = getDocument().getLength(); 
-        setCaretPosition(len); 
-        setCharacterAttributes(aset, false);
-        setCharacterAttributes(aset2, false);
-        	replaceSelection(text);
-    }
+
     
 }
