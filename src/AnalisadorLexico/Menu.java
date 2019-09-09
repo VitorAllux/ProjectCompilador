@@ -2,36 +2,29 @@ package AnalisadorLexico;
 
 import java.awt.Color;
 import java.awt.EventQueue;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.ReplicateScaleFilter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Stack;
 
-import javax.print.attribute.AttributeSet;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
 
+@SuppressWarnings("serial")
 public class Menu extends JFrame {
 
 	private JPanel contentPane;
@@ -47,7 +40,6 @@ public class Menu extends JFrame {
 	// tabela e modelo
 	private JTable table;
 	private DefaultTableModel model;
-	private JTable tabela;
 
 	// main
 
@@ -103,9 +95,9 @@ public class Menu extends JFrame {
 		this.getContentPane().add(scrollPane1);
 
 		// Botões
-		
+
 		//botão new
-		
+
 		btnNew = new JButton("Novo",
 				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\novo.png"));
 		btnNew.setBounds(5, 3, 90, 25);
@@ -113,7 +105,7 @@ public class Menu extends JFrame {
 		btnNew.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
+
 				editor.setText(null);
 				console1.setText(null);
 				model.setRowCount(0);
@@ -122,14 +114,14 @@ public class Menu extends JFrame {
 		contentPane.add(btnNew);
 
 		// botão Buscar
-		
+
 		btnSearch = new JButton("buscar",
 				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\localizar.png"));
 		btnSearch.setBounds(btnNew.getWidth()*2 + 15, 3, btnNew.getWidth(), 25);
 		btnSearch.setBorder(BorderFactory.createLineBorder(Color.black));
 		btnSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+
 				JFileChooser chooser = new JFileChooser();
 				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 				chooser.setCurrentDirectory(new File("Documentos"));
@@ -149,7 +141,7 @@ public class Menu extends JFrame {
 		contentPane.add(btnSearch);
 
 		// botão executar
-		
+
 		btnRun = new JButton("Executar",
 				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\avancar.png"));
 		btnRun.setBounds(btnNew.getWidth() + 10, 3, btnNew.getWidth(), 25);
@@ -180,8 +172,9 @@ public class Menu extends JFrame {
 			}
 		});
 		contentPane.add(btnRun);
-		
+
 		// botão salvar
+		
 		
 		btnSave = new JButton("Salvar",
 				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\salvar.png"));
@@ -190,11 +183,11 @@ public class Menu extends JFrame {
 		btnSave.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
+
 				JFileChooser chooser = new JFileChooser();
 				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				chooser.setCurrentDirectory(new File("Documentos"));
-				
+
 				int op;
 				String name;
 				File arq;
@@ -203,7 +196,7 @@ public class Menu extends JFrame {
 					if(op == 0) {
 						name = JOptionPane.showInputDialog("Informe o nome do arquivo");
 						arq = new File(chooser.getSelectedFile().getPath() + "\\" + name);
-						
+
 						if(arq.exists()) {
 							JOptionPane.showMessageDialog(null, "Arquivo com o mesmo nome já existente");
 						}
@@ -216,13 +209,13 @@ public class Menu extends JFrame {
 								e1.printStackTrace();
 							}
 						}
-						
+
 					}
 				}
 			}
 		});
 		contentPane.add(btnSave);
-		
+
 
 
 		// editor
