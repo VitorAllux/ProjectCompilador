@@ -1,15 +1,13 @@
 package AnalisadorLexico;
 
-public class Token {
+public class Token extends TokenX{
 	
-	int codigo;
-	int linha;
-	String simbolo;
+	int linha;	
 	
-	Token(int codigo, int linha, String simbolo){
+	public Token(int codigo, int linha, String simbolo){
 		this.codigo = codigo;
-		this.simbolo = simbolo;
 		this.linha = linha;
+		this.simbolo = simbolo;
 	}
 	
 	public void setLinha(int linha) {
@@ -18,22 +16,6 @@ public class Token {
 	
 	public int getLinha() {
 		return linha;
-	}
-	
-	public int getCodigo() {
-		return codigo;
-	}
-	
-	public void setCodigo(int codigo) {
-		this.codigo = codigo;
-	}
-	
-	public String getSimbolo() {
-		return simbolo;
-	}
-	
-	public void setSimbolo(String simbolo) {
-		this.simbolo = simbolo;
 	}
 
 }
