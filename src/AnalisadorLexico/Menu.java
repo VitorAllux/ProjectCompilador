@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Stack;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -32,7 +33,7 @@ public class Menu extends JFrame {
 
 	public JScrollPane scrollPane1, scrollPane2, scrollPane3;
 	private String text;
-	private JButton btnSearch, btnRun, btnSave, btnNew;
+	private JButton btnSearch, btnRun, btnSave, btnNew, btnBuild;
 	private Stack<Token> tokens = new Stack<Token>();
 	private Menu menu = this;
 	public String aux = new String();
@@ -42,13 +43,14 @@ public class Menu extends JFrame {
 	private DefaultTableModel model;
 
 	// main
+	private Automato automato;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
 					Menu frame = new Menu();
-					frame.setVisible(true);
+					frame.setVisible(true);					
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -59,6 +61,8 @@ public class Menu extends JFrame {
 	// Menu
 
 	public Menu() {
+		automato = new Automato(menu);
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1050, 581);
 		setResizable(false);
@@ -156,7 +160,6 @@ public class Menu extends JFrame {
 				editor.append(Color.black, aux, false);
 				if (!editor.getText().isEmpty()) {
 					model.setRowCount(0);
-					Automato automato = new Automato(menu);
 					tokens = automato.splitSimbols(getTextArea());
 					if (tokens != null) {
 						for (Token token : tokens) {
@@ -215,7 +218,21 @@ public class Menu extends JFrame {
 			}
 		});
 		contentPane.add(btnSave);
-
+		
+		btnBuild = new JButton("Build",
+				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\subir.png"));
+		btnBuild.setBounds(btnSave.getBounds().x + btnSave.getWidth() + 5, btnSave.getBounds().y, btnSave.getWidth(), 25);
+		btnBuild.setBorder(BorderFactory.createLineBorder(Color.black));
+		btnBuild.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				automato.analiseSintatica(automato.splitSimbols(getTextArea()));
+			}
+		});
+		contentPane.add(btnBuild);
+		
 
 
 		// editor
