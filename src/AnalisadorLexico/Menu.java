@@ -2,38 +2,46 @@ package AnalisadorLexico;
 
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.ReplicateScaleFilter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Stack;
 
-import javax.swing.AbstractAction;
+import javax.print.attribute.AttributeSet;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 
-@SuppressWarnings("serial")
 public class Menu extends JFrame {
 
 	private JPanel contentPane;
-	public ColorPane editor, console1;
+	public ColorPane editor, console;
 
 	public JScrollPane scrollPane1, scrollPane2, scrollPane3;
 	private String text;
-	private JButton btnSearch, btnRun, btnSave, btnNew, btnBuild;
+	private JButton btnSearch, btnRun, btnSave, btnNew;
 	private Stack<Token> tokens = new Stack<Token>();
 	private Menu menu = this;
 	public String aux = new String();
@@ -41,16 +49,16 @@ public class Menu extends JFrame {
 	// tabela e modelo
 	private JTable table;
 	private DefaultTableModel model;
+	private JTable tabela;
 
 	// main
-	private Automato automato;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
 					Menu frame = new Menu();
-					frame.setVisible(true);					
+					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -61,8 +69,6 @@ public class Menu extends JFrame {
 	// Menu
 
 	public Menu() {
-		automato = new Automato(menu);
-		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1050, 581);
 		setResizable(false);
@@ -99,9 +105,9 @@ public class Menu extends JFrame {
 		this.getContentPane().add(scrollPane1);
 
 		// Botões
-
+		
 		//botão new
-
+		
 		btnNew = new JButton("Novo",
 				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\novo.png"));
 		btnNew.setBounds(5, 3, 90, 25);
@@ -109,43 +115,46 @@ public class Menu extends JFrame {
 		btnNew.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-
+				
 				editor.setText(null);
-				console1.setText(null);
+				console.setText(null);
 				model.setRowCount(0);
 			}
 		});
 		contentPane.add(btnNew);
 
 		// botão Buscar
-
+		
 		btnSearch = new JButton("buscar",
 				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\localizar.png"));
 		btnSearch.setBounds(btnNew.getWidth()*2 + 15, 3, btnNew.getWidth(), 25);
 		btnSearch.setBorder(BorderFactory.createLineBorder(Color.black));
 		btnSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
+				
 				JFileChooser chooser = new JFileChooser();
 				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 				chooser.setCurrentDirectory(new File("Documentos"));
 
 				try {
-					if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
+					if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 						text = new FileManipulator().fileRead(chooser.getSelectedFile().getPath());
+						editor.setText(text);
+					}
+
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 
-				editor.setText(text);
+
 
 			}
 		});
 		contentPane.add(btnSearch);
 
 		// botão executar
-
+		
 		btnRun = new JButton("Executar",
 				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\avancar.png"));
 		btnRun.setBounds(btnNew.getWidth() + 10, 3, btnNew.getWidth(), 25);
@@ -153,13 +162,14 @@ public class Menu extends JFrame {
 		btnRun.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				console1.setText(null);
-				console1.append(Color.BLUE, "Executando", true);
-				String aux = editor.getText().replaceAll("\r", "");
+				console.setText(null);
+				console.append(Color.BLUE, "Executando", true);
+				String aux = editor.getText().replaceAll("\r\r", "");
 				editor.setText(null);
 				editor.append(Color.black, aux, false);
 				if (!editor.getText().isEmpty()) {
 					model.setRowCount(0);
+					Automato automato = new Automato(menu);
 					tokens = automato.splitSimbols(getTextArea());
 					if (tokens != null) {
 						for (Token token : tokens) {
@@ -170,14 +180,13 @@ public class Menu extends JFrame {
 				} else {
 					JOptionPane.showMessageDialog(null, "Campo de texto vazio");
 				}
-				console1.append(Color.blue, "\nFinalizado", true);
+				console.append(Color.blue, "\nFinalizado", true);
 
 			}
 		});
 		contentPane.add(btnRun);
-
-		// botão salvar
 		
+		// botão salvar
 		
 		btnSave = new JButton("Salvar",
 				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\salvar.png"));
@@ -186,11 +195,11 @@ public class Menu extends JFrame {
 		btnSave.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-
+				
 				JFileChooser chooser = new JFileChooser();
 				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				chooser.setCurrentDirectory(new File("Documentos"));
-
+				
 				int op;
 				String name;
 				File arq;
@@ -199,7 +208,7 @@ public class Menu extends JFrame {
 					if(op == 0) {
 						name = JOptionPane.showInputDialog("Informe o nome do arquivo");
 						arq = new File(chooser.getSelectedFile().getPath() + "\\" + name);
-
+						
 						if(arq.exists()) {
 							JOptionPane.showMessageDialog(null, "Arquivo com o mesmo nome já existente");
 						}
@@ -212,32 +221,18 @@ public class Menu extends JFrame {
 								e1.printStackTrace();
 							}
 						}
-
+						
 					}
 				}
 			}
 		});
 		contentPane.add(btnSave);
 		
-		btnBuild = new JButton("Build",
-				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\subir.png"));
-		btnBuild.setBounds(btnSave.getBounds().x + btnSave.getWidth() + 5, btnSave.getBounds().y, btnSave.getWidth(), 25);
-		btnBuild.setBorder(BorderFactory.createLineBorder(Color.black));
-		btnBuild.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
-				automato.analiseSintatica(automato.splitSimbols(getTextArea()));
-			}
-		});
-		contentPane.add(btnBuild);
-		
 
 
 		// editor
 
-		editor = new ColorPane();
+		editor = new ColorPane(this);
 		editor.setBorder(BorderFactory.createLineBorder(Color.black));
 		scrollPane3 = new JScrollPane(editor);
 		TextLineNumber contadorLinhas = new TextLineNumber(editor);
@@ -247,9 +242,9 @@ public class Menu extends JFrame {
 		contentPane.add(scrollPane3);
 		// console
 
-		console1 = new ColorPane();
-		console1.setBorder(BorderFactory.createLineBorder(Color.black));
-		scrollPane2 = new JScrollPane(console1);
+		console = new ColorPane(this);
+		console.setBorder(BorderFactory.createLineBorder(Color.black));
+		scrollPane2 = new JScrollPane(console);
 		scrollPane2.setBounds(5, 390, 789, 155);
 		scrollPane2.setBorder(BorderFactory.createLineBorder(Color.black));
 		contentPane.add(scrollPane2);
@@ -276,7 +271,7 @@ public class Menu extends JFrame {
 		for (Erro bug : erros) {
 			// console1.setText(console1.getText()+ "\n" + "Error: " + bug.getMsgError()+ "
 			// line: " + bug.getLinha() + "\n");
-			console1.append(Color.red, "Erro: " + bug.getMsgError() + " linha: " + bug.getLinha() + "\n", true);
+			console.append(Color.red, "Erro: " + bug.getMsgError() + " linha: " + bug.getLinha() + "\n", true);
 		}
 	}
 
@@ -288,9 +283,10 @@ public class Menu extends JFrame {
 		int i = 1;
 		for (String text : textList) {
 			if (i == erros.get(0).getLinha()) {
-				editor.append(Color.RED, text, true);
+				editor.appendError(Color.lightGray, text+"\n");
 			} else {
-				editor.append(Color.black, text, true);
+				editor.append(Color.white, text, true);
+
 			}
 			i++;
 		}
