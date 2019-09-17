@@ -62,7 +62,7 @@ public class Automato {
 						}
 					}
 				}else {
-					erros.add(new Erro("Erro sintatico", "sintatico", A.getCodigo()));
+					erros.add(new Erro("Erro sintatico", "sintatico", A.getLinha()));
 				}
 			}
 			if(!erros.isEmpty()) {				
@@ -135,6 +135,9 @@ public class Automato {
 		tabelaSimbolos.put("THEN", "14");
 		tabelaSimbolos.put("ELSE", "15");
 		tabelaSimbolos.put("WHILE", "16");
+		tabelaSimbolos.put("DO", "17");
+		tabelaSimbolos.put("REPEAT", "18");
+		tabelaSimbolos.put("UNTIL", "19");		
 		tabelaSimbolos.put("READLN", "20");
 		tabelaSimbolos.put("WRITELN", "21");
 		tabelaSimbolos.put("OR", "22");
@@ -176,7 +179,7 @@ public class Automato {
 		tabelaSimbolos.put("DCLCONST" ,"57");
 		tabelaSimbolos.put("LDCONST" ,"58");
 		tabelaSimbolos.put("DCLVAR" ,"59");
-		tabelaSimbolos.put("LDVAR60" ,"");
+		tabelaSimbolos.put("LDVAR" ,"60");
 		tabelaSimbolos.put("TIPO" ,"61");
 		tabelaSimbolos.put("DCLPROC" ,"62");
 		tabelaSimbolos.put("DEFPAR" ,"63");
@@ -330,9 +333,9 @@ public class Automato {
 		tabelaParsing.put("78,40" ,"=|EXPSIMP" );
 		tabelaParsing.put("78,41" ,">|EXPSIMP" );
 		tabelaParsing.put("78,42" ,">=|EXPSIMP" );
-		tabelaParsing.put("78,43" ,"&lt;|EXPSIMP" );
-		tabelaParsing.put("78,44" ,"&lt;=|EXPSIMP" );
-		tabelaParsing.put("78,45" ,"&lt;&gt;|EXPSIMP" );
+		tabelaParsing.put("78,43" ,"<;|EXPSIMP" );
+		tabelaParsing.put("78,44" ,"<=|EXPSIMP" );
+		tabelaParsing.put("78,45" ,"<>|EXPSIMP" );
 		tabelaParsing.put("78,46" ,"NULL" );
 		tabelaParsing.put("78,47" ,"NULL" );
 		tabelaParsing.put("79,24" ,"TERMO|REPEXP" );
