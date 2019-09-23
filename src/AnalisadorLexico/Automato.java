@@ -32,6 +32,8 @@ public class Automato {
 	}	
 	
 	public void analiseSintatica(Stack<Token> listA) {
+		
+		reset();
 		ArrayList<TokenX> listX = new ArrayList<TokenX>();
 		String[] simbolos;
 		listX.add(new TokenX(52, "programa"));
@@ -91,7 +93,7 @@ public class Automato {
 	}
 
 	public Integer getSymbolID(String symbol) {
-
+		
 		String str = tabelaSimbolos.get(symbol.toUpperCase());
 		str = ((str!=null)&&(str.matches("(25|26|48)"))? null: str);
 		if(str == null||Integer.parseInt(str)>51) {
@@ -403,12 +405,19 @@ public class Automato {
 
 	}
 	
+	public void reset() {
+		simbols.clear();
+		erros.clear();
+	}
+	
 	public Stack<Token> splitSimbols(ArrayList<String> list){
 
+		reset();
 		String simbolo = "", combinado = "";
 		Character s;
 		int linha = 0;
 		boolean isLiteral = false, ignore = false;
+		
 		
 		//percorre todas linhas
 		for(String str: list) {
