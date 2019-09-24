@@ -93,7 +93,7 @@ public class IDE extends JFrame {
 		tablePane = new JLayeredPane();
 		
 		scrollPane1 = new JScrollPane(tableL);
-		scrollPane1.setBounds(5,170,235, 355);
+		scrollPane1.setBounds(5,170,235, 350);
 		scrollPane1.setBorder(BorderFactory.createLineBorder(Color.black));
 		scrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 		tablePane.add(scrollPane1);
@@ -103,6 +103,7 @@ public class IDE extends JFrame {
 		scrollPane2.setBorder(BorderFactory.createLineBorder(Color.black));
 		scrollPane2.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 		tablePane.add(scrollPane2);
+		tablePane.setVisible(false);
 
 		// BUTTONS
 
@@ -232,6 +233,7 @@ public class IDE extends JFrame {
 				}
 			}
 		});
+		btnBuild.setVisible(false);
 		
 		// BUTTON DEBBUG
 		btnDebug = new JButton("Debug", new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\debug.png"));
@@ -326,7 +328,7 @@ public class IDE extends JFrame {
 								// EDITOR
 								.addComponent(scrollPane3)
 								// TABLE
-								.addComponent(tablePane, GroupLayout.PREFERRED_SIZE, 525,GroupLayout.PREFERRED_SIZE)
+								.addComponent(tablePane, GroupLayout.PREFERRED_SIZE, 520,GroupLayout.PREFERRED_SIZE)
 								)
 						//CONSOLE GROUP
 						.addGap(10)
