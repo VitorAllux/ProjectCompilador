@@ -13,6 +13,8 @@ import java.util.Stack;
 
 import javax.print.attribute.AttributeSet;
 import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -33,23 +35,24 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
+import javax.swing.text.AbstractDocument.Content;
 
 public class Menu extends JFrame {
 
 	private JPanel contentPane;
-	public ColorPane editor, console;
 
-	public JScrollPane scrollPane1, scrollPane2, scrollPane3;
+	
+	public ColorPane editor, console;
+	public JScrollPane scrollPane1, scrollPane2, scrollPane3, scrollPane4;
 	private String text;
 	private JButton btnSearch, btnRun, btnSave, btnNew, btnBuild;
 	private Stack<Token> tokens = new Stack<Token>();
 	private Menu menu = this;
 	public String aux = new String();
 
-	// tabela e modelo
-	private JTable table;
-	private DefaultTableModel model;
-	private JTable tabela;
+	// tabela e modelo   L => lexica  S => Sintatica;
+	private JTable tableL, tableS;
+	private DefaultTableModel modelL, modelS;
 
 	
 	private Automato automato;
@@ -72,7 +75,6 @@ public class Menu extends JFrame {
 
 	public Menu() {
 		automato = new Automato(menu);
-		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1050, 581);
 		setResizable(false);
@@ -83,30 +85,55 @@ public class Menu extends JFrame {
 		contentPane.setLayout(null);
 
 		// debug table
-
+		
+		//table Lexica
 		String colunas[] = { "Codigo", "Linha", "Simbolo" };
-
-		model = new DefaultTableModel(null, colunas) {
+		
+		modelL = new DefaultTableModel(null, colunas) {
 			public boolean isCellEditable(int row, int column) {
 				return false;
 			}
 		};
-		table = new JTable();
-		table.setModel(model);
-		table.setBorder(BorderFactory.createLineBorder(Color.black));
-		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		table.getTableHeader().setEnabled(true);
-		table.setBounds(800, 150, 235, 395);
+		tableL = new JTable();
+		tableL.setModel(modelL);
+		tableL.setBorder(BorderFactory.createLineBorder(Color.black));
+		tableL.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		tableL.setBounds(800, 150, 235, 395);
 		;
-		table.setVisible(true);
-		contentPane.add(table);
+
+		
+		//table Sintatica
+		String colunas2[] = { "Codigo", "Simbolo" };
+		
+		modelS = new DefaultTableModel(null, colunas2) {
+			public boolean isCellEditable(int row, int column) {
+				return false;
+			}
+		};
+		
+		tableS = new JTable();
+		tableS.setModel(modelS);
+		tableS.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+		tableS.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		tableS.setBounds(800, 20, 235, 395);
+
+
 
 		// Scroll Pane
-		scrollPane1 = new JScrollPane(table);
-		scrollPane1.setBounds(800, 150, 235, 395);
+		scrollPane1 = new JScrollPane(tableL);
+		scrollPane1.setBounds(800, 200, 235, 345);
 		scrollPane1.setBorder(BorderFactory.createLineBorder(Color.black));
 		scrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 		this.getContentPane().add(scrollPane1);
+		scrollPane1.setVisible(true);
+
+		
+		scrollPane2 = new JScrollPane(tableS);
+		scrollPane2.setBounds(800, 30, 235, 165);
+		scrollPane2.setBorder(BorderFactory.createLineBorder(Color.black));
+		scrollPane2.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+		this.getContentPane().add(scrollPane2);
+		scrollPane2.setVisible(true);
 
 		// Botões
 		
@@ -122,7 +149,8 @@ public class Menu extends JFrame {
 				
 				editor.setText(null);
 				console.setText(null);
-				model.setRowCount(0);
+				modelL.setRowCount(0);
+				modelS.setRowCount(0);
 			}
 		});
 		contentPane.add(btnNew);
@@ -172,11 +200,11 @@ public class Menu extends JFrame {
 				editor.setText(null);
 				editor.append(Color.black, aux, false);
 				if (!editor.getText().isEmpty()) {
-					model.setRowCount(0);
+					modelL.setRowCount(0);
 					tokens = automato.splitSimbols(getTextArea());
 					if (tokens != null) {
 						for (Token token : tokens) {
-							model.addRow(new String[] { Integer.toString(token.getCodigo()),
+							modelL.addRow(new String[] { Integer.toString(token.getCodigo()),
 									Integer.toString(token.getLinha()), token.getSimbolo() });
 						}
 					}
@@ -260,10 +288,10 @@ public class Menu extends JFrame {
 
 		console = new ColorPane(this);
 		console.setBorder(BorderFactory.createLineBorder(Color.black));
-		scrollPane2 = new JScrollPane(console);
-		scrollPane2.setBounds(5, 390, 789, 155);
-		scrollPane2.setBorder(BorderFactory.createLineBorder(Color.black));
-		contentPane.add(scrollPane2);
+		scrollPane4 = new JScrollPane(console);
+		scrollPane4.setBounds(5, 390, 789, 155);
+		scrollPane4.setBorder(BorderFactory.createLineBorder(Color.black));
+		contentPane.add(scrollPane4);
 
 	}
 
