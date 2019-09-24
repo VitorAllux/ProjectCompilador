@@ -1,4 +1,4 @@
-package AnalisadorLexico;
+package Compilador;
 
 import java.awt.Color;
 
@@ -15,20 +15,20 @@ import javax.swing.text.StyleContext;
 public class ColorPane extends JTextPane {
 
 	private boolean onError = false;
-	public Menu menu;
+	public IDE menu;
 
-	public ColorPane(Menu menu) {
-		this.menu = menu;
+	public ColorPane(IDE ide) {
+		this.menu = ide;
 		this.setStyledDocument(doc);
 		this.addCaretListener(new CaretListener() {
 
 			@Override
 			public void caretUpdate(CaretEvent e) {
 				System.out.println(onError? "true" : "false");
-				menu.editor.setBackground(Color.white);
+				ide.editor.setBackground(Color.white);
 				if(onError) {
 					
-					ColorPane editor = menu.editor;
+					ColorPane editor = ide.editor;
 					try {
 					String text = editor.getText();
 					System.out.println("printou o texto"  +  text);

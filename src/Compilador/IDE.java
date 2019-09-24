@@ -1,94 +1,67 @@
-package AnalisadorLexico;
+package Compilador;
 
 import java.awt.Color;
 import java.awt.EventQueue;
-import java.awt.Font;
+import java.awt.JobAttributes;
+import java.awt.MenuBar;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.ReplicateScaleFilter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.ResourceBundle.Control;
 import java.util.Stack;
 
-import javax.print.attribute.AttributeSet;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
+import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
-import javax.swing.text.AbstractDocument.Content;
 
-public class Menu extends JFrame {
+public class IDE extends JFrame {
 
-	private JPanel contentPane;
-
-	
+	// PANES
 	public ColorPane editor, console;
-	public JScrollPane scrollPane1, scrollPane2, scrollPane3, scrollPane4;
-	private String text;
-	private JButton btnSearch, btnRun, btnSave, btnNew, btnBuild;
+	private JScrollPane scrollPane1, scrollPane2, scrollPane3, scrollPane4;
+	private JLayeredPane tablePane;
+	// BUTTONS
+	private JButton btnSearch, btnRun, btnSave, btnNew, btnBuild, btnDebug;
+	// TOKENS
 	private Stack<Token> tokens = new Stack<Token>();
-	private Menu menu = this;
+	// STRINGS
 	public String aux = new String();
-
-	// tabela e modelo   L => lexica  S => Sintatica;
+	private String text;
+	// TABBLES AND MODELS
 	private JTable tableL, tableS;
 	private DefaultTableModel modelL, modelS;
-
-	
+	// AUTOMATO E IDE
 	private Automato automato;
-	// main
+	public IDE ide = this;
 
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					Menu frame = new Menu();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+	public IDE() {
 
-	// Menu
-
-	public Menu() {
-		automato = new Automato(menu);
+		automato = new Automato(ide);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 1050, 581);
 		setResizable(false);
 		setLocationRelativeTo(null);
-		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		setContentPane(contentPane);
-		contentPane.setLayout(null);
+		setBounds(400, 200, 1050, 740);
+		GroupLayout layout = new GroupLayout(this.getContentPane());
+		this.setLayout(layout);
 
-		// debug table
-		
-		//table Lexica
+		// DEBUG TABLES
+		// LEXIC TABLE
 		String colunas[] = { "Codigo", "Linha", "Simbolo" };
-		
+
 		modelL = new DefaultTableModel(null, colunas) {
 			public boolean isCellEditable(int row, int column) {
 				return false;
@@ -101,69 +74,60 @@ public class Menu extends JFrame {
 		tableL.setBounds(800, 150, 235, 395);
 		;
 
-		
-		//table Sintatica
+		// SINTATIC TABLE
 		String colunas2[] = { "Codigo", "Simbolo" };
-		
+
 		modelS = new DefaultTableModel(null, colunas2) {
 			public boolean isCellEditable(int row, int column) {
 				return false;
 			}
 		};
-		
+
 		tableS = new JTable();
 		tableS.setModel(modelS);
 		tableS.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		tableS.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		tableS.setBounds(800, 20, 235, 395);
-
-
-
-		// Scroll Pane
+		
+		// SCROLL PANES
+		tablePane = new JLayeredPane();
+		
 		scrollPane1 = new JScrollPane(tableL);
-		scrollPane1.setBounds(800, 200, 235, 345);
+		scrollPane1.setBounds(5,170,235, 355);
 		scrollPane1.setBorder(BorderFactory.createLineBorder(Color.black));
 		scrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-		this.getContentPane().add(scrollPane1);
-		scrollPane1.setVisible(true);
+		tablePane.add(scrollPane1);
 
-		
 		scrollPane2 = new JScrollPane(tableS);
-		scrollPane2.setBounds(800, 30, 235, 165);
+		scrollPane2.setBounds(5, 0, 235, 165);
 		scrollPane2.setBorder(BorderFactory.createLineBorder(Color.black));
 		scrollPane2.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-		this.getContentPane().add(scrollPane2);
-		scrollPane2.setVisible(true);
+		tablePane.add(scrollPane2);
 
-		// Botões
-		
-		//botão new
-		
-		btnNew = new JButton("Novo",
-				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\novo.png"));
-		btnNew.setBounds(5, 3, 90, 25);
+		// BUTTONS
+
+		// BUTTON NEW
+		btnNew = new JButton("Novo", new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\novo.png"));
 		btnNew.setBorder(BorderFactory.createLineBorder(Color.black));
 		btnNew.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
+
 				editor.setText(null);
 				console.setText(null);
 				modelL.setRowCount(0);
 				modelS.setRowCount(0);
 			}
 		});
-		contentPane.add(btnNew);
 
-		// botão Buscar
 		
+		// BUTTON SEARCH
 		btnSearch = new JButton("buscar",
 				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\localizar.png"));
-		btnSearch.setBounds(btnNew.getWidth()*2 + 15, 3, btnNew.getWidth(), 25);
 		btnSearch.setBorder(BorderFactory.createLineBorder(Color.black));
 		btnSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+
 				JFileChooser chooser = new JFileChooser();
 				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 				chooser.setCurrentDirectory(new File("Documentos"));
@@ -179,17 +143,13 @@ public class Menu extends JFrame {
 					e1.printStackTrace();
 				}
 
-
-
 			}
 		});
-		contentPane.add(btnSearch);
 
-		// botão executar
-		
+		// BUTTON EXECUTE
+
 		btnRun = new JButton("Executar",
 				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\avancar.png"));
-		btnRun.setBounds(btnNew.getWidth() + 10, 3, btnNew.getWidth(), 25);
 		btnRun.setBorder(BorderFactory.createLineBorder(Color.black));
 		btnRun.addActionListener(new ActionListener() {
 			@Override
@@ -201,7 +161,7 @@ public class Menu extends JFrame {
 				editor.append(Color.black, aux, false);
 				if (!editor.getText().isEmpty()) {
 					modelL.setRowCount(0);
-					tokens = automato.splitSimbols(getTextArea());
+					tokens = automato.splitSimbols(getEditorText());
 					if (tokens != null) {
 						for (Token token : tokens) {
 							modelL.addRow(new String[] { Integer.toString(token.getCodigo()),
@@ -215,35 +175,32 @@ public class Menu extends JFrame {
 
 			}
 		});
-		contentPane.add(btnRun);
-		
-		// botão salvar
-		
-		btnSave = new JButton("Salvar",
-				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\salvar.png"));
-		btnSave.setBounds(btnNew.getWidth()*3 + 20, 3, btnNew.getWidth(), 25);
+
+		// BUTTON SAVE
+
+		btnSave = new JButton("Salvar", new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\salvar.png"));
 		btnSave.setBorder(BorderFactory.createLineBorder(Color.black));
 		btnSave.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
+
 				JFileChooser chooser = new JFileChooser();
 				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				chooser.setCurrentDirectory(new File("Documentos"));
-				
+
 				int op;
 				String name;
 				File arq;
 				if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-					op = JOptionPane.showConfirmDialog(null, "Deseja uma cópia salva neste diretório?", "criar diretório",  JOptionPane.YES_NO_OPTION);
-					if(op == 0) {
+					op = JOptionPane.showConfirmDialog(null, "Deseja uma cópia salva neste diretório?",
+							"criar diretório", JOptionPane.YES_NO_OPTION);
+					if (op == 0) {
 						name = JOptionPane.showInputDialog("Informe o nome do arquivo");
 						arq = new File(chooser.getSelectedFile().getPath() + "\\" + name);
-						
-						if(arq.exists()) {
+
+						if (arq.exists()) {
 							JOptionPane.showMessageDialog(null, "Arquivo com o mesmo nome já existente");
-						}
-						else {
+						} else {
 							try {
 								arq.createNewFile();
 								FileManipulator.fileWrite(arq.getAbsolutePath(), editor.getText());
@@ -252,52 +209,154 @@ public class Menu extends JFrame {
 								e1.printStackTrace();
 							}
 						}
-						
+
 					}
 				}
 			}
 		});
-		contentPane.add(btnSave);
-		
-		btnBuild = new JButton("Build",
-				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\subir.png"));
-		btnBuild.setBounds(btnSave.getBounds().x + btnSave.getWidth() + 5, btnSave.getBounds().y, btnSave.getWidth(), 25);
+
+		// BUTTON BUILDS
+		btnBuild = new JButton("Build", new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\build.png"));
 		btnBuild.setBorder(BorderFactory.createLineBorder(Color.black));
 		btnBuild.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
-				automato.analiseSintatica(automato.splitSimbols(getTextArea()));
+				if(editor.getText().isEmpty()) {
+					JOptionPane.showMessageDialog(null, "Editor Vazio!");
+				}
+				else {
+					automato.analiseSintatica(automato.splitSimbols(getEditorText()));
+
+				}
 			}
 		});
-		contentPane.add(btnBuild);		
-
-
-		// editor
-
+		
+		// BUTTON DEBBUG
+		btnDebug = new JButton("Debug", new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\debug.png"));
+		btnDebug.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+		btnDebug.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(tablePane.isVisible()) {
+					tablePane.setVisible(false);
+				}
+				else {
+					tablePane.setVisible(true);
+				}
+				if(btnBuild.isVisible()) {
+					btnBuild.setVisible(false);
+				}
+				else {
+					btnBuild.setVisible(true);
+				}
+				
+			}
+		});
+		
+		
+		// PANES
+		// EDITOR PANE
 		editor = new ColorPane(this);
 		editor.setBorder(BorderFactory.createLineBorder(Color.black));
-		scrollPane3 = new JScrollPane(editor);
-		TextLineNumber contadorLinhas = new TextLineNumber(editor);
-		scrollPane3.setRowHeaderView(contadorLinhas);
-		scrollPane3.setBounds(5, 30, 789, 355);
-		scrollPane3.setBorder(BorderFactory.createLineBorder(Color.black));
-		contentPane.add(scrollPane3);
-		// console
 
+		TextLineNumber contadorLinhas = new TextLineNumber(editor);
+		// CONSOLE PANE
 		console = new ColorPane(this);
 		console.setBorder(BorderFactory.createLineBorder(Color.black));
+		// SCROLL PANE
+		scrollPane3 = new JScrollPane(editor);
+		scrollPane3.setRowHeaderView(contadorLinhas);
+		scrollPane3.setSize(this.getWidth(), 355);
+		scrollPane3.setBorder(BorderFactory.createLineBorder(Color.black));
 		scrollPane4 = new JScrollPane(console);
-		scrollPane4.setBounds(5, 390, 789, 155);
+		scrollPane4.setSize(790, 155);
 		scrollPane4.setBorder(BorderFactory.createLineBorder(Color.black));
-		contentPane.add(scrollPane4);
+		
+		
+		// LAYOUT
+		// ADD MAGINS
+		layout.setAutoCreateContainerGaps(true);
+		// HORIZONTAL GROUP
+		layout.setHorizontalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+				.addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+						//BUTTONS GROUP
+						.addGroup(layout.createSequentialGroup()
+								// BUTTONS
+								.addComponent(btnNew, GroupLayout.PREFERRED_SIZE, 90,GroupLayout.PREFERRED_SIZE).addGap(2)
+								.addComponent(btnSave, GroupLayout.PREFERRED_SIZE, 90,GroupLayout.PREFERRED_SIZE).addGap(2)
+								.addComponent(btnSearch, GroupLayout.PREFERRED_SIZE, 90,GroupLayout.PREFERRED_SIZE).addGap(2)
+								.addComponent(btnRun, GroupLayout.PREFERRED_SIZE, 90,GroupLayout.PREFERRED_SIZE).addGap(2)
+								.addComponent(btnDebug, GroupLayout.PREFERRED_SIZE, 90,GroupLayout.PREFERRED_SIZE).addGap(2)
+								.addComponent(btnBuild, GroupLayout.PREFERRED_SIZE,90,GroupLayout.PREFERRED_SIZE).addGap(2)
+								)
+						//EDITOR GROUP
+						.addGroup(layout.createSequentialGroup()
+								// EDITOR
+								.addComponent(scrollPane3)
+								// TABLE
+								.addComponent(tablePane, GroupLayout.PREFERRED_SIZE, 240, GroupLayout.PREFERRED_SIZE )
+								)
+						//CONSOLE GROUP
+						.addGroup(layout.createSequentialGroup()
+								// CONSOLE
+								.addComponent(scrollPane4,GroupLayout.PREFERRED_SIZE,this.getWidth()-30,GroupLayout.PREFERRED_SIZE)
+								)
+						)
+		);
+
+		// VERTICAL GROUP
+		layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+				.addGroup(layout.createSequentialGroup()
+						//BUTTONS GROUP
+						.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+								// BUTTONS
+								.addComponent(btnNew, GroupLayout.PREFERRED_SIZE, 25,GroupLayout.PREFERRED_SIZE)
+								.addComponent(btnSave, GroupLayout.PREFERRED_SIZE, 25,GroupLayout.PREFERRED_SIZE)
+								.addComponent(btnSearch, GroupLayout.PREFERRED_SIZE, 25,GroupLayout.PREFERRED_SIZE)
+								.addComponent(btnRun, GroupLayout.PREFERRED_SIZE, 25,GroupLayout.PREFERRED_SIZE)
+								.addComponent(btnDebug, GroupLayout.PREFERRED_SIZE, 25,GroupLayout.PREFERRED_SIZE)
+								.addComponent(btnBuild, GroupLayout.PREFERRED_SIZE, 25,GroupLayout.PREFERRED_SIZE)
+								)
+						//EDITOR GROUP
+						.addGap(10)
+						.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+								// EDITOR
+								.addComponent(scrollPane3)
+								// TABLE
+								.addComponent(tablePane, GroupLayout.PREFERRED_SIZE, 525,GroupLayout.PREFERRED_SIZE)
+								)
+						//CONSOLE GROUP
+						.addGap(10)
+						.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+								// CONSOLE
+								.addComponent(scrollPane4,GroupLayout.PREFERRED_SIZE, 150-30 , GroupLayout.PREFERRED_SIZE)
+								)
+						)
+		);
 
 	}
+	
+	
+	// MAIN
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					IDE frame = new IDE();
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
 
-	// pegar texto do editor
-
-	public ArrayList<String> getTextArea() {
+	// FUNCTIONS
+	// GET TEXT OF EDITOR
+	public ArrayList<String> getEditorText() {
 		ArrayList<String> lista = new ArrayList<>();
 		String texto = editor.getText();
 		String[] aux;
@@ -309,8 +368,7 @@ public class Menu extends JFrame {
 		return lista;
 	}
 
-	// print console
-
+	// PRINT ERROR CONSOLE
 	public void printError(ArrayList<Erro> erros) {
 		for (Erro bug : erros) {
 			// console1.setText(console1.getText()+ "\n" + "Error: " + bug.getMsgError()+ "
@@ -319,15 +377,14 @@ public class Menu extends JFrame {
 		}
 	}
 
-	// setar novo texto
-
+	// SET NEW TEXT EDITOR
 	public void newText(ArrayList<Erro> erros) {
-		ArrayList<String> textList = getTextArea();
+		ArrayList<String> textList = getEditorText();
 		editor.setText(null);
 		int i = 1;
 		for (String text : textList) {
 			if (i == erros.get(0).getLinha()) {
-				editor.appendError(Color.lightGray, text+"\n");
+				editor.appendError(Color.lightGray, text + "\n");
 			} else {
 				editor.append(Color.white, text, true);
 

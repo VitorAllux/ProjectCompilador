@@ -1,4 +1,4 @@
-package AnalisadorLexico;
+package Compilador;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,7 +10,7 @@ public class Automato {
 	private Stack<Token> simbols = new Stack<Token>();
 	private ArrayList<Erro> erros = new ArrayList<Erro>();
 	private int linha;
-	private Menu frame;	
+	private IDE frame;	
 	
 	private HashMap<String, String> tabelaSimbolos = new HashMap<String, String>(); 
 	private HashMap<String, String> tabelaParsing = new HashMap<String, String>(); 
@@ -117,9 +117,9 @@ public class Automato {
 		return Integer.parseInt(str);
 	}
 
-	public Automato(Menu menu) {
+	public Automato(IDE ide) {
 
-		frame = menu;
+		frame = ide;
 		
 		tabelaSimbolos.put("PROGRAM", "1");
 		tabelaSimbolos.put("LABEL", "2");

@@ -1,4 +1,4 @@
-package AnalisadorLexico;
+package Compilador;
 
 public class TokenX {
 	int codigo;
