@@ -1,4 +1,4 @@
-package Compilador;
+package Analyser;
 
 import java.util.ArrayList;
 
@@ -7,12 +7,12 @@ public class Main {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		Automato auto = new Automato(null);
+		Automatos auto = new Automatos(null);
 		
-		Menu menu = new Menu();
-		menu.setVisible(true);
+		IDE ide = new IDE();
+		ide.setVisible(true);
 		ArrayList<String> list = new ArrayList<String>();
-		menu.editor.setText("(*TESTE - Exemplo Válido*)\n" + 
+		ide.editor.setText("(*TESTE - Exemplo Válido*)\n" + 
 				"PROGRAM TESTE123;\n" + 
 				" 'literal teste'	LABEL\n" + 
 				"		label_a, label_b; \n" + 
@@ -91,7 +91,7 @@ public class Main {
 				"	END;\n" + 
 				"END.\n" + 
 				"");
-		list=menu.getTextArea();
+		list=ide.getEditorText();
 		int k = 1, Countlinha = 1;
 		String linha = "";
 		

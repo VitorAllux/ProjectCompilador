@@ -1,4 +1,4 @@
-package Compilador;
+package Analyser;
 
 import java.awt.Color;
 import java.awt.EventQueue;
@@ -45,17 +45,18 @@ public class IDE extends JFrame {
 	private JTable tableL, tableS;
 	private DefaultTableModel modelL, modelS;
 	// AUTOMATO E IDE
-	private Automato automato;
+	private Automatos automato;
 	public IDE ide = this;
 
 	public IDE() {
 
-		automato = new Automato(ide);
+		automato = new Automatos(ide);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
 		setLocationRelativeTo(null);
-		setBounds(400, 200, 1050, 740);
+		setBounds(400, 200, 1050, 680);
 		GroupLayout layout = new GroupLayout(this.getContentPane());
+		setLocationRelativeTo(null);
 		this.setLayout(layout);
 
 		// DEBUG TABLES
@@ -88,18 +89,18 @@ public class IDE extends JFrame {
 		tableS.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		tableS.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		tableS.setBounds(800, 20, 235, 395);
-		
+
 		// SCROLL PANES
 		tablePane = new JLayeredPane();
-		
+
 		scrollPane1 = new JScrollPane(tableL);
-		scrollPane1.setBounds(5,170,235, 350);
+		scrollPane1.setBounds(5, 150, 235, 330);
 		scrollPane1.setBorder(BorderFactory.createLineBorder(Color.black));
 		scrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 		tablePane.add(scrollPane1);
 
 		scrollPane2 = new JScrollPane(tableS);
-		scrollPane2.setBounds(5, 0, 235, 165);
+		scrollPane2.setBounds(5, 0, 235, 145);
 		scrollPane2.setBorder(BorderFactory.createLineBorder(Color.black));
 		scrollPane2.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 		tablePane.add(scrollPane2);
@@ -121,7 +122,6 @@ public class IDE extends JFrame {
 			}
 		});
 
-		
 		// BUTTON SEARCH
 		btnSearch = new JButton("buscar",
 				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\localizar.png"));
@@ -155,25 +155,28 @@ public class IDE extends JFrame {
 		btnRun.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				console.setText(null);
-				console.append(Color.BLUE, "Executando", true);
-				String aux = editor.getText().replaceAll("\r\r", "");
-				editor.setText(null);
-				editor.append(Color.black, aux, false);
 				if (!editor.getText().isEmpty()) {
-					modelL.setRowCount(0);
-					tokens = automato.splitSimbols(getEditorText());
-					if (tokens != null) {
-						for (Token token : tokens) {
-							modelL.addRow(new String[] { Integer.toString(token.getCodigo()),
-									Integer.toString(token.getLinha()), token.getSimbolo() });
+					console.setText(null);
+					console.append(Color.BLUE, "Executando", true);
+					String aux = editor.getText().replaceAll("\r\r", "");
+					editor.setText(null);
+					editor.append(Color.black, aux, false);
+					if (!editor.getText().isEmpty()) {
+						modelL.setRowCount(0);
+						tokens = automato.splitSimbols(getEditorText());
+						if (tokens != null) {
+							for (Token token : tokens) {
+								modelL.addRow(new String[] { Integer.toString(token.getCodigo()),
+										Integer.toString(token.getLinha()), token.getSimbolo() });
+							}
 						}
+					} else {
+						JOptionPane.showMessageDialog(null, "Campo de texto vazio");
 					}
+					console.append(Color.blue, "\nFinalizado", true);
 				} else {
-					JOptionPane.showMessageDialog(null, "Campo de texto vazio");
+					JOptionPane.showMessageDialog(null, "Editor vazio!");
 				}
-				console.append(Color.blue, "\nFinalizado", true);
-
 			}
 		});
 
@@ -197,7 +200,7 @@ public class IDE extends JFrame {
 							"criar diretório", JOptionPane.YES_NO_OPTION);
 					if (op == 0) {
 						name = JOptionPane.showInputDialog("Informe o nome do arquivo");
-						arq = new File(chooser.getSelectedFile().getPath() + "\\" + name);
+						arq = new File(chooser.getSelectedFile().getPath() + "\\" + name + ".LMS");
 
 						if (arq.exists()) {
 							JOptionPane.showMessageDialog(null, "Arquivo com o mesmo nome já existente");
@@ -224,41 +227,36 @@ public class IDE extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
-				if(editor.getText().isEmpty()) {
+				if (editor.getText().isEmpty()) {
 					JOptionPane.showMessageDialog(null, "Editor Vazio!");
-				}
-				else {
+				} else {
 					automato.analiseSintatica(automato.splitSimbols(getEditorText()));
-
 				}
 			}
 		});
 		btnBuild.setVisible(false);
-		
+
 		// BUTTON DEBBUG
 		btnDebug = new JButton("Debug", new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\debug.png"));
 		btnDebug.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		btnDebug.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(tablePane.isVisible()) {
+				if (tablePane.isVisible()) {
 					tablePane.setVisible(false);
-				}
-				else {
+				} else {
 					tablePane.setVisible(true);
 				}
-				if(btnBuild.isVisible()) {
+				if (btnBuild.isVisible()) {
 					btnBuild.setVisible(false);
-				}
-				else {
+				} else {
 					btnBuild.setVisible(true);
 				}
-				
+
 			}
 		});
-		
-		
+
 		// PANES
 		// EDITOR PANE
 		editor = new ColorPane(this);
@@ -271,77 +269,64 @@ public class IDE extends JFrame {
 		// SCROLL PANE
 		scrollPane3 = new JScrollPane(editor);
 		scrollPane3.setRowHeaderView(contadorLinhas);
-		scrollPane3.setSize(this.getWidth(), 355);
+		scrollPane3.setSize(this.getWidth(), 335);
 		scrollPane3.setBorder(BorderFactory.createLineBorder(Color.black));
 		scrollPane4 = new JScrollPane(console);
 		scrollPane4.setSize(790, 155);
 		scrollPane4.setBorder(BorderFactory.createLineBorder(Color.black));
-		
-		
+
 		// LAYOUT
 		// ADD MAGINS
 		layout.setAutoCreateContainerGaps(true);
 		// HORIZONTAL GROUP
-		layout.setHorizontalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-				.addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-						//BUTTONS GROUP
-						.addGroup(layout.createSequentialGroup()
-								// BUTTONS
-								.addComponent(btnNew, GroupLayout.PREFERRED_SIZE, 90,GroupLayout.PREFERRED_SIZE).addGap(2)
-								.addComponent(btnSave, GroupLayout.PREFERRED_SIZE, 90,GroupLayout.PREFERRED_SIZE).addGap(2)
-								.addComponent(btnSearch, GroupLayout.PREFERRED_SIZE, 90,GroupLayout.PREFERRED_SIZE).addGap(2)
-								.addComponent(btnRun, GroupLayout.PREFERRED_SIZE, 90,GroupLayout.PREFERRED_SIZE).addGap(2)
-								.addComponent(btnDebug, GroupLayout.PREFERRED_SIZE, 90,GroupLayout.PREFERRED_SIZE).addGap(2)
-								.addComponent(btnBuild, GroupLayout.PREFERRED_SIZE,90,GroupLayout.PREFERRED_SIZE).addGap(2)
-								)
-						//EDITOR GROUP
-						.addGroup(layout.createSequentialGroup()
-								// EDITOR
-								.addComponent(scrollPane3)
-								// TABLE
-								.addComponent(tablePane, GroupLayout.PREFERRED_SIZE, 240, GroupLayout.PREFERRED_SIZE )
-								)
-						//CONSOLE GROUP
-						.addGroup(layout.createSequentialGroup()
-								// CONSOLE
-								.addComponent(scrollPane4,GroupLayout.PREFERRED_SIZE,this.getWidth()-30,GroupLayout.PREFERRED_SIZE)
-								)
-						)
-		);
+		layout.setHorizontalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout
+				.createParallelGroup(GroupLayout.Alignment.LEADING)
+				// BUTTONS GROUP
+				.addGroup(layout.createSequentialGroup()
+						// BUTTONS
+						.addComponent(btnNew, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE).addGap(2)
+						.addComponent(btnSave, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE).addGap(2)
+						.addComponent(btnSearch, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE).addGap(2)
+						.addComponent(btnRun, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE).addGap(2)
+						.addComponent(btnDebug, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE).addGap(2)
+						.addComponent(btnBuild, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE).addGap(2))
+				// EDITOR GROUP
+				.addGroup(layout.createSequentialGroup()
+						// EDITOR
+						.addComponent(scrollPane3)
+						// TABLE
+						.addComponent(tablePane, GroupLayout.PREFERRED_SIZE, 240, GroupLayout.PREFERRED_SIZE))
+				// CONSOLE GROUP
+				.addGroup(layout.createSequentialGroup()
+						// CONSOLE
+						.addComponent(scrollPane4, GroupLayout.PREFERRED_SIZE, this.getWidth() - 30,
+								GroupLayout.PREFERRED_SIZE))));
 
 		// VERTICAL GROUP
-		layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-				.addGroup(layout.createSequentialGroup()
-						//BUTTONS GROUP
-						.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-								// BUTTONS
-								.addComponent(btnNew, GroupLayout.PREFERRED_SIZE, 25,GroupLayout.PREFERRED_SIZE)
-								.addComponent(btnSave, GroupLayout.PREFERRED_SIZE, 25,GroupLayout.PREFERRED_SIZE)
-								.addComponent(btnSearch, GroupLayout.PREFERRED_SIZE, 25,GroupLayout.PREFERRED_SIZE)
-								.addComponent(btnRun, GroupLayout.PREFERRED_SIZE, 25,GroupLayout.PREFERRED_SIZE)
-								.addComponent(btnDebug, GroupLayout.PREFERRED_SIZE, 25,GroupLayout.PREFERRED_SIZE)
-								.addComponent(btnBuild, GroupLayout.PREFERRED_SIZE, 25,GroupLayout.PREFERRED_SIZE)
-								)
-						//EDITOR GROUP
-						.addGap(10)
-						.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-								// EDITOR
-								.addComponent(scrollPane3)
-								// TABLE
-								.addComponent(tablePane, GroupLayout.PREFERRED_SIZE, 520,GroupLayout.PREFERRED_SIZE)
-								)
-						//CONSOLE GROUP
-						.addGap(10)
-						.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-								// CONSOLE
-								.addComponent(scrollPane4,GroupLayout.PREFERRED_SIZE, 150-30 , GroupLayout.PREFERRED_SIZE)
-								)
-						)
-		);
+		layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addGroup(layout
+				.createSequentialGroup()
+				// BUTTONS GROUP
+				.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+						// BUTTONS
+						.addComponent(btnNew, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)
+						.addComponent(btnSave, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)
+						.addComponent(btnSearch, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)
+						.addComponent(btnRun, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)
+						.addComponent(btnDebug, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)
+						.addComponent(btnBuild, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE))
+				// EDITOR GROUP
+				.addGap(10).addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+						// EDITOR
+						.addComponent(scrollPane3)
+						// TABLE
+						.addComponent(tablePane, GroupLayout.PREFERRED_SIZE, 480, GroupLayout.PREFERRED_SIZE))
+				// CONSOLE GROUP
+				.addGap(10).addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+						// CONSOLE
+						.addComponent(scrollPane4, GroupLayout.PREFERRED_SIZE, 130 - 30, GroupLayout.PREFERRED_SIZE))));
 
 	}
-	
-	
+
 	// MAIN
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
