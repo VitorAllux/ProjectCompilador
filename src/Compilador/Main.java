@@ -1,4 +1,4 @@
-package Analyser;
+package Compilador;
 
 import java.util.ArrayList;
 

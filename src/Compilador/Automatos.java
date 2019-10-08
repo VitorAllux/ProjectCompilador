@@ -1,4 +1,4 @@
-package Analyser;
+package Compilador;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,15 +32,15 @@ public class Automatos {
 		return c.toString().trim().isEmpty();		
 	}	
 	
-	public void analiseSintatica(Stack<Token> listA) {
-		
-		listA = (Stack<Token>)listA.clone();
+	
+	public void analiseSintatica(boolean stepByStep, ArrayList<TokenX> listX, Stack<Token> listA) {		
 		reset();
-		ArrayList<TokenX> listX = new ArrayList<TokenX>();
-		String[] simbolos;
-		listX.add(new TokenX(52, "programa"));
+		if(listX.isEmpty()) {
+			listX.add(new TokenX(52, "programa"));
+		}
 		int i = 0;
 		String parsing, id;
+		String[] simbolos;
 		TokenX X;
 		Token A;
 		
@@ -75,6 +75,9 @@ public class Automatos {
 				frame.newText(erros);
 				break;
 			}
+			if(stepByStep) {
+				break;
+			}
 		}
 	}
 	
@@ -99,6 +102,7 @@ public class Automatos {
 		
 		String str = tabelaSimbolos.get(symbol.toUpperCase());
 		str = ((str!=null)&&(str.matches("(25|26|48)"))? null: str);
+		
 		if(str == null||Integer.parseInt(str)>51) {
 			str = (symbol.matches("-?\\d+")) ? "26" : "25"; 			
 		}
@@ -106,13 +110,18 @@ public class Automatos {
 		System.out.println("procurou '"+symbol+"' result " + str);
 		
 		if(str == "26") {
-			int valor = Integer.parseInt(symbol);
+			int valor = 0;
+			try {
+				valor = Integer.parseInt(symbol);				
+			} catch (Exception e) {
+				valor = 32768;				
+			}
 			if((valor>32767)||(valor<-32767)) {
 				erros.add(new Erro("Numero fora de escala", "interno", linha));
 			}
 		} else {
 			if(str == "25") {
-				if(!Character.isAlphabetic(symbol.charAt(0))) {
+				if((!(symbol.charAt(0) == 39))&&(!Character.isAlphabetic(symbol.charAt(0)))) {
 					erros.add(new Erro("Indentificador com inicio invalido: "+symbol.charAt(0), "interno", linha));
 				}
 			}

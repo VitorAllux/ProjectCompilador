@@ -1,4 +1,4 @@
-package Analyser;
+package Compilador;
 
 import java.awt.Color;
 import java.awt.EventQueue;
@@ -38,6 +38,8 @@ public class IDE extends JFrame {
 	private JButton btnSearch, btnRun, btnSave, btnNew, btnBuild, btnDebug;
 	// TOKENS
 	private Stack<Token> tokens = new Stack<Token>();
+	private static Stack<Token> listA;
+	private static ArrayList<TokenX> listX;
 	// STRINGS
 	public String aux = new String();
 	private String text;
@@ -164,6 +166,8 @@ public class IDE extends JFrame {
 					if (!editor.getText().isEmpty()) {
 						modelL.setRowCount(0);
 						tokens = automato.splitSimbols(getEditorText());
+						listA = (Stack<Token>)tokens.clone();
+						listX.clear();						
 						if (tokens != null) {
 							for (Token token : tokens) {
 								modelL.addRow(new String[] { Integer.toString(token.getCodigo()),
@@ -230,7 +234,8 @@ public class IDE extends JFrame {
 				if (editor.getText().isEmpty()) {
 					JOptionPane.showMessageDialog(null, "Editor Vazio!");
 				} else {
-					automato.analiseSintatica(automato.splitSimbols(getEditorText()));
+					console.setText(null);
+					automato.analiseSintatica(true, listX, listA);
 				}
 			}
 		});
