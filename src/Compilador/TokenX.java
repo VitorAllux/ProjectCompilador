@@ -13,7 +13,7 @@ public class TokenX {
 		this.simbolo = simbolo;
 	}
 		
-	public int getCodigo() {
+	public Integer getCodigo() {
 		return codigo;
 	}
 	

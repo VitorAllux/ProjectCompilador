@@ -53,6 +53,7 @@ public class IDE extends JFrame {
 	public IDE() {
 
 		automato = new Automatos(ide);
+		listX = new ArrayList<TokenX>();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
 		setLocationRelativeTo(null);
@@ -157,6 +158,7 @@ public class IDE extends JFrame {
 		btnRun.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				btnBuild.setEnabled(false);
 				if (!editor.getText().isEmpty()) {
 					console.setText(null);
 					console.append(Color.BLUE, "Executando", true);
@@ -166,8 +168,14 @@ public class IDE extends JFrame {
 					if (!editor.getText().isEmpty()) {
 						modelL.setRowCount(0);
 						tokens = automato.splitSimbols(getEditorText());
-						listA = (Stack<Token>)tokens.clone();
-						listX.clear();						
+						try {
+							listA = (Stack<Token>)tokens.clone();
+							listX.clear();
+							btnBuild.setEnabled(true);							
+						} catch (Exception e2) {
+							System.out.println("Erro no preenchimento das listas");
+						}
+						
 						if (tokens != null) {
 							for (Token token : tokens) {
 								modelL.addRow(new String[] { Integer.toString(token.getCodigo()),
@@ -235,7 +243,11 @@ public class IDE extends JFrame {
 					JOptionPane.showMessageDialog(null, "Editor Vazio!");
 				} else {
 					console.setText(null);
-					automato.analiseSintatica(true, listX, listA);
+					if (automato.analiseSintatica(true, listX, listA)) {
+						atualizaTableL();
+					}
+					atualizaTableS();
+					btnBuild.setEnabled(!listA.isEmpty());
 				}
 			}
 		});
@@ -330,6 +342,18 @@ public class IDE extends JFrame {
 						// CONSOLE
 						.addComponent(scrollPane4, GroupLayout.PREFERRED_SIZE, 130 - 30, GroupLayout.PREFERRED_SIZE))));
 
+	}
+	
+	private void atualizaTableL() {
+		modelL.removeRow(0);
+	}
+	
+	private void atualizaTableS() {
+		modelS.setRowCount(0);
+		
+		for(TokenX token : listX) {
+			modelS.addRow(new Object[]{token.getCodigo().toString(), token.getSimbolo()});						
+		}
 	}
 
 	// MAIN

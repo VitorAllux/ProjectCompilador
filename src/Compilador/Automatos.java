@@ -33,7 +33,7 @@ public class Automatos {
 	}	
 	
 	
-	public void analiseSintatica(boolean stepByStep, ArrayList<TokenX> listX, Stack<Token> listA) {		
+	public boolean analiseSintatica(boolean stepByStep, ArrayList<TokenX> listX, Stack<Token> listA) {		
 		reset();
 		if(listX.isEmpty()) {
 			listX.add(new TokenX(52, "programa"));
@@ -43,6 +43,7 @@ public class Automatos {
 		String[] simbolos;
 		TokenX X;
 		Token A;
+		boolean tokenRemovido = false;
 		
 		while(!listX.isEmpty()) {
 			X = listX.get(i);
@@ -50,7 +51,8 @@ public class Automatos {
 			if(X.codigo < 52) {
 				if(X.getCodigo() == A.getCodigo()) {
 					listX.remove(i);
-					listA.remove(i);					
+					listA.remove(i);	
+					tokenRemovido = true;
 				}else {
 					erros.add(new Erro("Erro sintatico", "sintatico", listA.get(i).getLinha()));
 				}
@@ -79,6 +81,7 @@ public class Automatos {
 				break;
 			}
 		}
+		return tokenRemovido;
 	}
 	
 	private String convertToCondenate(int x, int a) {
