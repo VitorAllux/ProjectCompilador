@@ -35,7 +35,7 @@ public class IDE extends JFrame {
 	private JScrollPane scrollPane1, scrollPane2, scrollPane3, scrollPane4;
 	private JLayeredPane tablePane;
 	// BUTTONS
-	private JButton btnSearch, btnRun, btnSave, btnNew, btnBuild, btnDebug;
+	private JButton btnSearch, btnRun, btnSave, btnNew, btnBuild, btnDebug, btnStep;
 	// TOKENS
 	private Stack<Token> tokens = new Stack<Token>();
 	private static Stack<Token> listA;
@@ -96,16 +96,15 @@ public class IDE extends JFrame {
 		// SCROLL PANES
 		tablePane = new JLayeredPane();
 
-		scrollPane1 = new JScrollPane(tableL);
+		scrollPane1 = new JScrollPane(tableL, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane1.setBounds(5, 150, 235, 330);
 		scrollPane1.setBorder(BorderFactory.createLineBorder(Color.black));
-		scrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 		tablePane.add(scrollPane1);
 
-		scrollPane2 = new JScrollPane(tableS);
+		scrollPane2 = new JScrollPane(tableS, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane2.setBounds(5, 0, 235, 145);
 		scrollPane2.setBorder(BorderFactory.createLineBorder(Color.black));
-		scrollPane2.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+
 		tablePane.add(scrollPane2);
 		tablePane.setVisible(false);
 
@@ -171,11 +170,12 @@ public class IDE extends JFrame {
 						try {
 							listA = (Stack<Token>)tokens.clone();
 							listX.clear();
+							atualizaTableS();
 							btnBuild.setEnabled(true);							
 						} catch (Exception e2) {
 							System.out.println("Erro no preenchimento das listas");
 						}
-						
+
 						if (tokens != null) {
 							for (Token token : tokens) {
 								modelL.addRow(new String[] { Integer.toString(token.getCodigo()),
@@ -186,6 +186,8 @@ public class IDE extends JFrame {
 						JOptionPane.showMessageDialog(null, "Campo de texto vazio");
 					}
 					console.append(Color.blue, "\nFinalizado", true);
+					btnStep.setEnabled(true);
+					btnBuild.setEnabled(true);
 				} else {
 					JOptionPane.showMessageDialog(null, "Editor vazio!");
 				}
@@ -231,7 +233,7 @@ public class IDE extends JFrame {
 			}
 		});
 
-		// BUTTON BUILDS
+		// BUTTON BUILD
 		btnBuild = new JButton("Build", new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\build.png"));
 		btnBuild.setBorder(BorderFactory.createLineBorder(Color.black));
 		btnBuild.addActionListener(new ActionListener() {
@@ -243,16 +245,46 @@ public class IDE extends JFrame {
 					JOptionPane.showMessageDialog(null, "Editor Vazio!");
 				} else {
 					console.setText(null);
-					if (automato.analiseSintatica(true, listX, listA)) {
-						atualizaTableL();
+					while(!listA.isEmpty()) {
+						if (automato.analiseSintatica(false, listX, listA)) {
+							atualizaTableL();
+						}
+						atualizaTableS();
+						if(!automato.erros.isEmpty()) {
+							break;
+						}
 					}
-					atualizaTableS();
-					btnBuild.setEnabled(!listA.isEmpty());
+					btnBuild.setEnabled(false);
 				}
 			}
 		});
 		btnBuild.setVisible(false);
+		btnBuild.setEnabled(false);
 
+		// BUTTON STEP
+		btnStep = new JButton(">");
+		btnStep.setBorder(BorderFactory.createLineBorder(Color.black));
+		btnStep.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				console.setText(null);
+				if(automato.analiseSintatica(true, listX, listA)) {
+					atualizaTableL();
+				}
+				atualizaTableS();
+				if(!automato.erros.isEmpty()) {
+					btnStep.setEnabled(false);
+				}
+				else {
+				btnStep.setEnabled(!listA.isEmpty());
+				}
+			}
+		});
+		btnStep.setBounds(1006, 20, 25, 25);
+		btnStep.setVisible(false);
+		btnStep.setEnabled(false);
+		this.getContentPane().add(btnStep);
 		// BUTTON DEBBUG
 		btnDebug = new JButton("Debug", new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\debug.png"));
 		btnDebug.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -262,8 +294,10 @@ public class IDE extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				if (tablePane.isVisible()) {
 					tablePane.setVisible(false);
+					btnStep.setVisible(false);
 				} else {
 					tablePane.setVisible(true);
+					btnStep.setVisible(true);
 				}
 				if (btnBuild.isVisible()) {
 					btnBuild.setVisible(false);
@@ -306,7 +340,8 @@ public class IDE extends JFrame {
 						.addComponent(btnSearch, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE).addGap(2)
 						.addComponent(btnRun, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE).addGap(2)
 						.addComponent(btnDebug, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE).addGap(2)
-						.addComponent(btnBuild, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE).addGap(2))
+						//.addComponent(btnStep, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE)
+						.addComponent(btnBuild, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE).addGap(380))
 				// EDITOR GROUP
 				.addGroup(layout.createSequentialGroup()
 						// EDITOR
@@ -330,6 +365,7 @@ public class IDE extends JFrame {
 						.addComponent(btnSearch, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)
 						.addComponent(btnRun, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)
 						.addComponent(btnDebug, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)
+						//.addComponent(btnStep, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)
 						.addComponent(btnBuild, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE))
 				// EDITOR GROUP
 				.addGap(10).addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
@@ -343,14 +379,14 @@ public class IDE extends JFrame {
 						.addComponent(scrollPane4, GroupLayout.PREFERRED_SIZE, 130 - 30, GroupLayout.PREFERRED_SIZE))));
 
 	}
-	
+
 	private void atualizaTableL() {
 		modelL.removeRow(0);
 	}
-	
+
 	private void atualizaTableS() {
 		modelS.setRowCount(0);
-		
+
 		for(TokenX token : listX) {
 			modelS.addRow(new Object[]{token.getCodigo().toString(), token.getSimbolo()});						
 		}
@@ -389,7 +425,9 @@ public class IDE extends JFrame {
 		for (Erro bug : erros) {
 			// console1.setText(console1.getText()+ "\n" + "Error: " + bug.getMsgError()+ "
 			// line: " + bug.getLinha() + "\n");
-			console.append(Color.red, "Erro: " + bug.getMsgError() + " linha: " + bug.getLinha() + "\n", true);
+			btnStep.setEnabled(false);
+			btnBuild.setEnabled(false);
+			console.append(Color.red, "Erro: " + bug.getMsgError() + (bug.getTipo().equals("sintatico")? ("     Encontrado: ["+listA.get(0).getSimbolo()+"] Esperado: ["+listX.get(0).getSimbolo()+"]     "):"") + " linha: " + bug.getLinha() + "\n", true);
 		}
 	}
 

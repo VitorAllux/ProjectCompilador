@@ -6,16 +6,16 @@ import java.util.Map;
 import java.util.Stack;
 
 public class Automatos {
-	
+
 	private Stack<Token> simbols = new Stack<Token>();
-	private ArrayList<Erro> erros = new ArrayList<Erro>();
+	public ArrayList<Erro> erros = new ArrayList<Erro>();
 	private int linha;
 	private IDE frame;
-	
+
 	private HashMap<String, String> tabelaSimbolos = new HashMap<String, String>(); 
 	private HashMap<String, String> tabelaParsing = new HashMap<String, String>(); 
-	
-	
+
+
 	public boolean nativeSymbols(Character s) {
 		return " 	;,+-/*()[]$".indexOf(s) != -1;
 	}
@@ -23,16 +23,16 @@ public class Automatos {
 	public boolean nativeSequence(Character s) {
 		return ".:=<>".indexOf(s) != -1;
 	}
-	
+
 	public boolean isLastPos(int pos, String str) {
 		return pos + 1 >= str.length();
 	}
-	
+
 	private boolean isEmptyChar(Character c){
 		return c.toString().trim().isEmpty();		
 	}	
-	
-	
+
+
 	public boolean analiseSintatica(boolean stepByStep, ArrayList<TokenX> listX, Stack<Token> listA) {		
 		reset();
 		if(listX.isEmpty()) {
@@ -44,74 +44,68 @@ public class Automatos {
 		TokenX X;
 		Token A;
 		boolean tokenRemovido = false;
-		
-		while(!listX.isEmpty()) {
-			X = listX.get(i);
-			A = listA.get(i);
-			if(X.codigo < 52) {
-				if(X.getCodigo() == A.getCodigo()) {
-					listX.remove(i);
-					listA.remove(i);	
-					tokenRemovido = true;
-				}else {
-					erros.add(new Erro("Erro sintatico", "sintatico", listA.get(i).getLinha()));
+
+		X = listX.get(i);
+		A = listA.get(i);
+		if(X.codigo < 52) {
+			if(X.getCodigo() == A.getCodigo()) {
+				listX.remove(i);
+				listA.remove(i);				
+				tokenRemovido = true;
+			}else {
+				erros.add(new Erro("Erro sintatico", "sintatico", listA.get(i).getLinha()));
+			}
+		}else {
+			parsing = convertToParsing(convertToCondenate(X.getCodigo(), A.getCodigo()));
+			if(parsing!=null) {
+				listX.remove(i);
+				if(!parsing.equals("NULL")) {
+					simbolos = parsing.split("[|]");
+					for(int k = simbolos.length - 1; k >= 0; k--) {
+						id = tabelaSimbolos.get(simbolos[k].toUpperCase());
+						listX.add(0, new TokenX(Integer.parseInt(id==null?"0":id), simbolos[k]));
+
+					}
 				}
 			}else {
-				parsing = convertToParsing(convertToCondenate(X.getCodigo(), A.getCodigo()));
-				if(parsing!=null) {
-					listX.remove(i);
-					if(!parsing.equals("NULL")) {
-						simbolos = parsing.split("[|]");
-						for(int k = simbolos.length - 1; k >= 0; k--) {
-							id = tabelaSimbolos.get(simbolos[k].toUpperCase());
-							listX.add(0, new TokenX(Integer.parseInt(id==null?"0":id), simbolos[k]));
-							
-						}
-					}
-				}else {
-					erros.add(new Erro("Erro sintatico", "sintatico", A.getLinha()));
-				}
+				erros.add(new Erro("Erro sintatico", "sintatico", A.getLinha()));
 			}
-			if(!erros.isEmpty()) {				
-				frame.printError(erros);
-				frame.newText(erros);
-				break;
-			}
-			if(stepByStep) {
-				break;
-			}
+		}
+		if(!erros.isEmpty()) {				
+			frame.printError(erros);
+			frame.newText(erros);
 		}
 		return tokenRemovido;
 	}
-	
+
 	private String convertToCondenate(int x, int a) {
 		return Integer.toString(x)+","+Integer.toString(a);		
 	}
-	
+
 	private String convertToParsing(String cordenate) {
 		return tabelaParsing.get(cordenate);		
 	}
-		
-	
+
+
 	private void addInStack(String str, int linha, boolean literal) {		
 		if(literal) {
 			System.out.println("procurou '"+str+"' result 48");
 		}
-		
+
 		simbols.add(new Token(literal ? 48 : getSymbolID(str), linha, str));		
 	}
 
 	public Integer getSymbolID(String symbol) {
-		
+
 		String str = tabelaSimbolos.get(symbol.toUpperCase());
 		str = ((str!=null)&&(str.matches("(25|26|48)"))? null: str);
-		
+
 		if(str == null||Integer.parseInt(str)>51) {
 			str = (symbol.matches("-?\\d+")) ? "26" : "25"; 			
 		}
-		
+
 		System.out.println("procurou '"+symbol+"' result " + str);
-		
+
 		if(str == "26") {
 			int valor = 0;
 			try {
@@ -120,7 +114,7 @@ public class Automatos {
 				valor = 32768;				
 			}
 			if((valor>32767)||(valor<-32767)) {
-				erros.add(new Erro("Numero fora de escala", "interno", linha));
+				erros.add(new Erro("Numero fora de escala [Max: 32767, Min: -32767]", "interno", linha));
 			}
 		} else {
 			if(str == "25") {
@@ -135,7 +129,7 @@ public class Automatos {
 	public Automatos(IDE ide) {
 
 		frame = ide;
-		
+
 		tabelaSimbolos.put("PROGRAM", "1");
 		tabelaSimbolos.put("LABEL", "2");
 		tabelaSimbolos.put("CONST", "3");
@@ -224,8 +218,8 @@ public class Automatos {
 		tabelaSimbolos.put("CONTCASE" ,"85");
 		tabelaSimbolos.put("RPINTEIRO" ,"86");
 		tabelaSimbolos.put("SEMEFEITO" ,"87");
-		
-		
+
+
 		//tabela parsing - derivações
 		tabelaParsing.put("52,1" ,"PROGRAM|IDENTIFICADOR|;|BLOCO|." );
 		tabelaParsing.put("53,2" ,"DCLROT|DCLCONST|DCLVAR|DCLPROC|CORPO" );
@@ -419,12 +413,12 @@ public class Automatos {
 		tabelaParsing.put("86,46" ,",|INTEIRO|RPINTEIRO" );
 
 	}
-	
+
 	public void reset() {
 		simbols.clear();
 		erros.clear();
 	}
-	
+
 	public Stack<Token> splitSimbols(ArrayList<String> list){
 
 		reset();
@@ -432,8 +426,8 @@ public class Automatos {
 		Character s;
 		int linha = 0;
 		boolean isLiteral = false, ignore = false;
-		
-		
+
+
 		//percorre todas linhas
 		for(String str: list) {
 			simbolo = "";
@@ -443,12 +437,12 @@ public class Automatos {
 			//percorre todos caracteres
 			for(int i = 0; i < str.length(); i++) {
 				s = str.charAt(i); 
-				
+
 				//Comentario e Literais não finalizados - Erro
 				if(isLastPos(i, str)&&(isLiteral||(ignore&&list.size()==linha))) {
 					erros.add(new Erro((isLiteral ? "literal" : "cometario") + " não finalizado", "interno", linha));
 				}
-				
+
 				//Trata comentario
 				if(s=='('&&str.charAt(i+1)=='*') {
 					ignore = true;
@@ -461,7 +455,7 @@ public class Automatos {
 				if(ignore) {
 					continue;				
 				}					
-				                                   //nagativo seguido de digito    
+				//nagativo seguido de digito    
 				if (!nativeSymbols(s)||isLiteral||((s == '-')&&(Character.isDigit(str.charAt(i+1))))) {
 					//Inicia e fecha literais
 					if(s == 39) {
@@ -477,7 +471,7 @@ public class Automatos {
 							}
 						}					
 					}
-					
+
 					if(nativeSequence(s)&&!isLiteral) {
 						//Trata combinações de simbolos ex(>=, .., <>, :=)
 						combinado += s;
@@ -509,7 +503,7 @@ public class Automatos {
 						addInStack(combinado, linha, false);
 						combinado = "";					
 					}else {
-						
+
 						//Acumula literal ou simbolos e Força o fechamento do ultimo simbolo da linha
 						if(isLiteral||!isEmptyChar(s)) {
 							simbolo += s;
