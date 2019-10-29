@@ -49,6 +49,9 @@ public class IDE extends JFrame {
 	// AUTOMATO E IDE
 	private Automatos automato;
 	public IDE ide = this;
+	private String dir = null;
+	
+	File arq;
 
 	public IDE() {
 
@@ -96,12 +99,14 @@ public class IDE extends JFrame {
 		// SCROLL PANES
 		tablePane = new JLayeredPane();
 
-		scrollPane1 = new JScrollPane(tableL, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane1 = new JScrollPane(tableL, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane1.setBounds(5, 150, 235, 330);
 		scrollPane1.setBorder(BorderFactory.createLineBorder(Color.black));
 		tablePane.add(scrollPane1);
 
-		scrollPane2 = new JScrollPane(tableS, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane2 = new JScrollPane(tableS, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane2.setBounds(5, 0, 235, 145);
 		scrollPane2.setBorder(BorderFactory.createLineBorder(Color.black));
 
@@ -121,6 +126,7 @@ public class IDE extends JFrame {
 				console.setText(null);
 				modelL.setRowCount(0);
 				modelS.setRowCount(0);
+				dir = null;
 			}
 		});
 
@@ -139,6 +145,7 @@ public class IDE extends JFrame {
 					if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 						text = new FileManipulator().fileRead(chooser.getSelectedFile().getPath());
 						editor.setText(text);
+						dir = chooser.getSelectedFile().getAbsolutePath();
 					}
 
 				} catch (IOException e1) {
@@ -168,10 +175,10 @@ public class IDE extends JFrame {
 						modelL.setRowCount(0);
 						tokens = automato.splitSimbols(getEditorText());
 						try {
-							listA = (Stack<Token>)tokens.clone();
+							listA = (Stack<Token>) tokens.clone();
 							listX.clear();
 							atualizaTableS();
-							btnBuild.setEnabled(true);							
+							btnBuild.setEnabled(true);
 						} catch (Exception e2) {
 							System.out.println("Erro no preenchimento das listas");
 						}
@@ -201,35 +208,55 @@ public class IDE extends JFrame {
 		btnSave.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-
-				JFileChooser chooser = new JFileChooser();
-				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-				chooser.setCurrentDirectory(new File("Documentos"));
-
 				int op;
-				String name;
-				File arq;
-				if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-					op = JOptionPane.showConfirmDialog(null, "Deseja uma cópia salva neste diretório?",
-							"criar diretório", JOptionPane.YES_NO_OPTION);
-					if (op == 0) {
-						name = JOptionPane.showInputDialog("Informe o nome do arquivo");
-						arq = new File(chooser.getSelectedFile().getPath() + "\\" + name + ".LMS");
-
-						if (arq.exists()) {
-							JOptionPane.showMessageDialog(null, "Arquivo com o mesmo nome já existente");
-						} else {
-							try {
-								arq.createNewFile();
-								FileManipulator.fileWrite(arq.getAbsolutePath(), editor.getText());
-							} catch (IOException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
+				String name;				
+				if (dir!=null) {
+					System.out.println(dir);
+					arq = new File(dir);
+					if (arq.exists()) {
+						try {
+							arq.delete();
+							arq.createNewFile();
+							FileManipulator.fileWrite(arq.getAbsolutePath(), editor.getText());
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
 						}
-
+					} else {
+						try {
+							arq.createNewFile();
+							FileManipulator.fileWrite(arq.getAbsolutePath(), editor.getText());
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 					}
-				}
+				} else {
+					JFileChooser chooser = new JFileChooser();
+					chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+					if(arq != null) {
+						chooser.setCurrentDirectory(arq);
+					}else {
+						chooser.setCurrentDirectory(new File("Documentos"));
+					}
+					if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+							System.out.println(chooser.getName());	
+							arq = chooser.getSelectedFile(); 
+							dir = arq.getAbsolutePath();
+							if (chooser.getSelectedFile().exists()) {
+								JOptionPane.showMessageDialog(null, "Arquivo com o mesmo nome já existente");
+							} else {
+								try {
+									arq.createNewFile();
+									FileManipulator.fileWrite(arq.getAbsolutePath(), editor.getText());
+								} catch (IOException e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+							}
+
+						}
+					}
 			}
 		});
 
@@ -245,12 +272,12 @@ public class IDE extends JFrame {
 					JOptionPane.showMessageDialog(null, "Editor Vazio!");
 				} else {
 					console.setText(null);
-					while(!listA.isEmpty()) {
+					while (!listA.isEmpty()) {
 						if (automato.analiseSintatica(false, listX, listA)) {
 							atualizaTableL();
 						}
 						atualizaTableS();
-						if(!automato.erros.isEmpty()) {
+						if (!automato.erros.isEmpty()) {
 							break;
 						}
 					}
@@ -269,15 +296,14 @@ public class IDE extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				console.setText(null);
-				if(automato.analiseSintatica(true, listX, listA)) {
+				if (automato.analiseSintatica(true, listX, listA)) {
 					atualizaTableL();
 				}
 				atualizaTableS();
-				if(!automato.erros.isEmpty()) {
+				if (!automato.erros.isEmpty()) {
 					btnStep.setEnabled(false);
-				}
-				else {
-				btnStep.setEnabled(!listA.isEmpty());
+				} else {
+					btnStep.setEnabled(!listA.isEmpty());
 				}
 			}
 		});
@@ -340,7 +366,8 @@ public class IDE extends JFrame {
 						.addComponent(btnSearch, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE).addGap(2)
 						.addComponent(btnRun, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE).addGap(2)
 						.addComponent(btnDebug, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE).addGap(2)
-						//.addComponent(btnStep, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE)
+						// .addComponent(btnStep, GroupLayout.PREFERRED_SIZE, 90,
+						// GroupLayout.PREFERRED_SIZE)
 						.addComponent(btnBuild, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE).addGap(380))
 				// EDITOR GROUP
 				.addGroup(layout.createSequentialGroup()
@@ -365,7 +392,8 @@ public class IDE extends JFrame {
 						.addComponent(btnSearch, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)
 						.addComponent(btnRun, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)
 						.addComponent(btnDebug, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)
-						//.addComponent(btnStep, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)
+						// .addComponent(btnStep, GroupLayout.PREFERRED_SIZE, 25,
+						// GroupLayout.PREFERRED_SIZE)
 						.addComponent(btnBuild, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE))
 				// EDITOR GROUP
 				.addGap(10).addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
@@ -387,8 +415,8 @@ public class IDE extends JFrame {
 	private void atualizaTableS() {
 		modelS.setRowCount(0);
 
-		for(TokenX token : listX) {
-			modelS.addRow(new Object[]{token.getCodigo().toString(), token.getSimbolo()});						
+		for (TokenX token : listX) {
+			modelS.addRow(new Object[] { token.getCodigo().toString(), token.getSimbolo() });
 		}
 	}
 
@@ -427,7 +455,14 @@ public class IDE extends JFrame {
 			// line: " + bug.getLinha() + "\n");
 			btnStep.setEnabled(false);
 			btnBuild.setEnabled(false);
-			console.append(Color.red, "Erro: " + bug.getMsgError() + (bug.getTipo().equals("sintatico")? ("     Encontrado: ["+listA.get(0).getSimbolo()+"] Esperado: ["+listX.get(0).getSimbolo()+"]     "):"") + " linha: " + bug.getLinha() + "\n", true);
+			console.append(Color.red,
+					"Erro: " + bug.getMsgError()
+							+ (bug.getTipo().equals("sintatico")
+									? ("     Encontrado: [" + listA.get(0).getSimbolo() + "] Esperado: ["
+											+ listX.get(0).getSimbolo() + "]     ")
+									: "")
+							+ " linha: " + bug.getLinha() + "\n",
+					true);
 		}
 	}
 
