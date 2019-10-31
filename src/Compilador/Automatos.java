@@ -14,7 +14,21 @@ public class Automatos {
 
 	private HashMap<String, String> tabelaSimbolos = new HashMap<String, String>(); 
 	private HashMap<String, String> tabelaParsing = new HashMap<String, String>(); 
+	private HashMap<String, String> tabelaDeclaracoes = new HashMap<String, String>();
 
+	private boolean isDeclared(String var, Integer nivel) {
+		TokenX token = null;
+		for(Integer i = 0; i < tabelaDeclaracoes.size(); i++) {
+
+			token = (TokenX)tabelaDeclaracoes.values().toArray()[i];
+
+			if(token.getSimbolo().equals(var) && token.getCodigo() <= nivel) {
+				return true;
+			}
+
+		}
+		return false;
+	}
 
 	public boolean nativeSymbols(Character s) {
 		return " 	;,+-/*()[]$".indexOf(s) != -1;
@@ -124,6 +138,163 @@ public class Automatos {
 			}
 		}
 		return Integer.parseInt(str);
+	}
+	public void reset() {
+		simbols.clear();
+		erros.clear();
+	}
+
+	public void analiseSemantica() {
+
+		Integer nivel = 0;
+
+		Token lastToken = null;
+
+		for(Token simbolo: simbols) {
+
+			switch (simbolo.getCodigo()) {
+			case 25: lastToken = simbolo;				
+			break;
+			case 26: if(isDeclared(lastToken.getSimbolo(), nivel)) {
+				erros.add(new Erro("Erro semantico", "Semantico", lastToken.getLinha()));
+			}else {
+				tabelaDeclaracoes.put(lastToken.getSimbolo(), nivel.toString());
+			}
+			break;
+			case 23: nivel--;
+			break;
+			case 24: nivel++;
+			break;
+
+			default:
+				break;
+			}
+
+		}
+
+	}
+
+	public Stack<Token> splitSimbols(ArrayList<String> list){
+
+		reset();
+		String simbolo = "", combinado = "";
+		Character s;
+		int linha = 0;
+		boolean isLiteral = false, ignore = false;
+
+
+		//percorre todas linhas
+		for(String str: list) {
+			simbolo = "";
+			combinado = "";
+			linha++;
+			this.linha = linha;
+			//percorre todos caracteres
+			for(int i = 0; i < str.length(); i++) {
+				s = str.charAt(i); 
+
+				//Comentario e Literais não finalizados - Erro
+				if(isLastPos(i, str)&&(isLiteral||(ignore&&list.size()==linha))) {
+					erros.add(new Erro((isLiteral ? "literal" : "cometario") + " não finalizado", "interno", linha));
+				}
+
+				//Trata comentario
+				if(s=='('&&str.charAt(i+1)=='*') {
+					ignore = true;
+				}
+				if(ignore&&(s=='*'&&str.charAt(i+1)==')')) {
+					i++;
+					ignore = false;
+					continue;
+				}
+				if(ignore) {
+					continue;				
+				}					
+				//nagativo seguido de digito    
+				if (!nativeSymbols(s)||isLiteral||((s == '-')&&(Character.isDigit(str.charAt(i+1))))) {
+					//Inicia e fecha literais
+					if(s == 39) {
+						isLiteral = !isLiteral;
+						if(!simbolo.isEmpty()) {
+							if(!isLiteral) {
+								simbolo += Character.toString((char)39);
+							}
+							addInStack(simbolo, linha, !isLiteral);
+							simbolo = "";
+							if(!isLiteral) {
+								continue;							
+							}
+						}					
+					}
+
+					if(nativeSequence(s)&&!isLiteral) {
+						//Trata combinações de simbolos ex(>=, .., <>, :=)
+						combinado += s;
+						if(!isLastPos(i, str)) {
+							if(s == 46) {
+								if(str.charAt(i+1) == 46) {
+									combinado += str.charAt(i+1);
+									i++;
+								}
+							}else {
+								if(s == 58) {
+									if(str.charAt(i+1) == 61) {
+										combinado += str.charAt(i+1);
+										i++;
+									}
+								}else {							
+									if(nativeSequence(str.charAt(i+1))) {
+										combinado += str.charAt(i+1);
+										i++;
+									}
+								}
+							}
+						}
+						//Finaliza simbolos pendentes e Simbolos combinados feitos
+						if(!simbolo.trim().isEmpty()) {
+							addInStack(simbolo, linha, false);
+						}
+						simbolo = "";
+						addInStack(combinado, linha, false);
+						combinado = "";					
+					}else {
+
+						//Acumula literal ou simbolos e Força o fechamento do ultimo simbolo da linha
+						if(isLiteral||!isEmptyChar(s)) {
+							simbolo += s;
+						}
+						if(isLastPos(i, str)&&!simbolo.trim().isEmpty()) {
+							addInStack(simbolo, linha, false);
+						}
+					}
+				}else {
+					//Finaliza simbolos pendentes
+					if(!simbolo.trim().isEmpty()) {
+						addInStack(simbolo, linha, false);
+					}
+					simbolo = "";				
+					//Finaliza o caracter especial sem combinação
+					if(!isEmptyChar(s)) {
+						addInStack(s.toString(), linha, false);					
+					}
+					combinado = "";
+				}
+				if(!erros.isEmpty()) {
+					break;
+				}
+			}
+			if(!erros.isEmpty()) {
+				break;
+			}
+		}
+
+		if(!erros.isEmpty()) {
+			frame.printError(erros);
+			frame.newText(erros);
+			return null;
+		}else {
+			return simbols;
+		}		
 	}
 
 	public Automatos(IDE ide) {
@@ -414,132 +585,5 @@ public class Automatos {
 
 	}
 
-	public void reset() {
-		simbols.clear();
-		erros.clear();
-	}
-
-	public Stack<Token> splitSimbols(ArrayList<String> list){
-
-		reset();
-		String simbolo = "", combinado = "";
-		Character s;
-		int linha = 0;
-		boolean isLiteral = false, ignore = false;
-
-
-		//percorre todas linhas
-		for(String str: list) {
-			simbolo = "";
-			combinado = "";
-			linha++;
-			this.linha = linha;
-			//percorre todos caracteres
-			for(int i = 0; i < str.length(); i++) {
-				s = str.charAt(i); 
-
-				//Comentario e Literais não finalizados - Erro
-				if(isLastPos(i, str)&&(isLiteral||(ignore&&list.size()==linha))) {
-					erros.add(new Erro((isLiteral ? "literal" : "cometario") + " não finalizado", "interno", linha));
-				}
-
-				//Trata comentario
-				if(s=='('&&str.charAt(i+1)=='*') {
-					ignore = true;
-				}
-				if(ignore&&(s=='*'&&str.charAt(i+1)==')')) {
-					i++;
-					ignore = false;
-					continue;
-				}
-				if(ignore) {
-					continue;				
-				}					
-				//nagativo seguido de digito    
-				if (!nativeSymbols(s)||isLiteral||((s == '-')&&(Character.isDigit(str.charAt(i+1))))) {
-					//Inicia e fecha literais
-					if(s == 39) {
-						isLiteral = !isLiteral;
-						if(!simbolo.isEmpty()) {
-							if(!isLiteral) {
-								simbolo += Character.toString((char)39);
-							}
-							addInStack(simbolo, linha, !isLiteral);
-							simbolo = "";
-							if(!isLiteral) {
-								continue;							
-							}
-						}					
-					}
-
-					if(nativeSequence(s)&&!isLiteral) {
-						//Trata combinações de simbolos ex(>=, .., <>, :=)
-						combinado += s;
-						if(!isLastPos(i, str)) {
-							if(s == 46) {
-								if(str.charAt(i+1) == 46) {
-									combinado += str.charAt(i+1);
-									i++;
-								}
-							}else {
-								if(s == 58) {
-									if(str.charAt(i+1) == 61) {
-										combinado += str.charAt(i+1);
-										i++;
-									}
-								}else {							
-									if(nativeSequence(str.charAt(i+1))) {
-										combinado += str.charAt(i+1);
-										i++;
-									}
-								}
-							}
-						}
-						//Finaliza simbolos pendentes e Simbolos combinados feitos
-						if(!simbolo.trim().isEmpty()) {
-							addInStack(simbolo, linha, false);
-						}
-						simbolo = "";
-						addInStack(combinado, linha, false);
-						combinado = "";					
-					}else {
-
-						//Acumula literal ou simbolos e Força o fechamento do ultimo simbolo da linha
-						if(isLiteral||!isEmptyChar(s)) {
-							simbolo += s;
-						}
-						if(isLastPos(i, str)&&!simbolo.trim().isEmpty()) {
-							addInStack(simbolo, linha, false);
-						}
-					}
-				}else {
-					//Finaliza simbolos pendentes
-					if(!simbolo.trim().isEmpty()) {
-						addInStack(simbolo, linha, false);
-					}
-					simbolo = "";				
-					//Finaliza o caracter especial sem combinação
-					if(!isEmptyChar(s)) {
-						addInStack(s.toString(), linha, false);					
-					}
-					combinado = "";
-				}
-				if(!erros.isEmpty()) {
-					break;
-				}
-			}
-			if(!erros.isEmpty()) {
-				break;
-			}
-		}
-
-		if(!erros.isEmpty()) {
-			frame.printError(erros);
-			frame.newText(erros);
-			return null;
-		}else {
-			return simbols;
-		}		
-	}
 
 }
