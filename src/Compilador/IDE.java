@@ -2,14 +2,11 @@ package Compilador;
 
 import java.awt.Color;
 import java.awt.EventQueue;
-import java.awt.JobAttributes;
-import java.awt.MenuBar;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.ResourceBundle.Control;
 import java.util.Stack;
 
 import javax.swing.BorderFactory;
@@ -18,16 +15,14 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.table.DefaultTableModel;
 
+@SuppressWarnings("serial")
 public class IDE extends JFrame {
 
 	// PANES
@@ -162,6 +157,7 @@ public class IDE extends JFrame {
 				new ImageIcon(System.getProperty("user.dir") + "\\images\\22x22\\avancar.png"));
 		btnRun.setBorder(BorderFactory.createLineBorder(Color.black));
 		btnRun.addActionListener(new ActionListener() {
+			@SuppressWarnings("unchecked")
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				btnBuild.setEnabled(false);
@@ -208,8 +204,6 @@ public class IDE extends JFrame {
 		btnSave.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				int op;
-				String name;				
 				if (dir!=null) {
 					System.out.println(dir);
 					arq = new File(dir);
