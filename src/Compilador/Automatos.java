@@ -2,12 +2,11 @@ package Compilador;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Stack;
 
 public class Automatos {
 
-	private Stack<Token> simbols = new Stack<Token>();
+	private Stack<Token> simbols = new Stack<Token>(), listTokens;
 	public ArrayList<Erro> erros = new ArrayList<Erro>();
 	private int linha;
 	private IDE frame;
@@ -47,10 +46,12 @@ public class Automatos {
 	}	
 
 
+	@SuppressWarnings("unchecked")
 	public boolean analiseSintatica(boolean stepByStep, ArrayList<TokenX> listX, Stack<Token> listA) {		
 		reset();
 		if(listX.isEmpty()) {
 			listX.add(new TokenX(52, "programa"));
+			listTokens = (Stack<Token>)listA.clone();
 		}
 		int i = 0;
 		String parsing, id;
@@ -88,6 +89,10 @@ public class Automatos {
 		if(!erros.isEmpty()) {				
 			frame.printError(erros);
 			frame.newText(erros);
+		}else {
+			if(listX.isEmpty()) {
+				analiseSemantica();				
+			}
 		}
 		return tokenRemovido;
 	}
@@ -148,22 +153,30 @@ public class Automatos {
 
 		Integer nivel = 0;
 
+		ArrayList<Token> lastTokens = new ArrayList<Token>();
 		Token lastToken = null;
 
-		for(Token simbolo: simbols) {
+		for(Token simbolo: listTokens) {
 
 			switch (simbolo.getCodigo()) {
 			case 25: lastToken = simbolo;				
 			break;
-			case 26: if(isDeclared(lastToken.getSimbolo(), nivel)) {
-				erros.add(new Erro("Erro semantico", "Semantico", lastToken.getLinha()));
-			}else {
-				tabelaDeclaracoes.put(lastToken.getSimbolo(), nivel.toString());
-			}
+			case 38: 	if(!isDeclared(lastToken.getSimbolo(), nivel)) {
+							erros.add(new Erro("A variavel não esta declarada", "Semantico", lastToken.getLinha()));
+						} 
 			break;
-			case 23: nivel--;
+			case 39:	lastTokens.add(lastToken);
+						if(isDeclared(lastToken.getSimbolo(), nivel)) {
+							erros.add(new Erro("A variavel ja esta declarada", "Semantico", lastToken.getLinha()));
+						}else {
+							insertTokens(lastTokens, nivel);
+						}
 			break;
-			case 24: nivel++;
+			case 47: lastTokens.add(lastToken);
+				break;
+			case 6: nivel++;
+			break;
+			case 7: nivel--;
 			break;
 
 			default:
@@ -172,6 +185,17 @@ public class Automatos {
 
 		}
 
+	}
+	
+	private void insertTokens(ArrayList<Token> tokens, Integer nivel) {
+		
+		for(Token token: tokens) {
+			
+			tabelaDeclaracoes.put(token.getSimbolo(), nivel.toString());
+			
+		}		
+		tokens.clear();
+		
 	}
 
 	public Stack<Token> splitSimbols(ArrayList<String> list){
