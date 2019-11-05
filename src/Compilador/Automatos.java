@@ -7,27 +7,13 @@ import java.util.Stack;
 public class Automatos {
 
 	private Stack<Token> simbols = new Stack<Token>(), listTokens;
+	private ArrayList<TokenSemantico> tabelaDeclaracoes = new ArrayList<TokenSemantico>();
 	public ArrayList<Erro> erros = new ArrayList<Erro>();
 	private int linha;
 	private IDE frame;
 
 	private HashMap<String, String> tabelaSimbolos = new HashMap<String, String>(); 
 	private HashMap<String, String> tabelaParsing = new HashMap<String, String>(); 
-	private HashMap<String, String> tabelaDeclaracoes = new HashMap<String, String>();
-
-	private boolean isDeclared(String var, Integer nivel) {
-		TokenX token = null;
-		for(Integer i = 0; i < tabelaDeclaracoes.size(); i++) {
-
-			token = (TokenX)tabelaDeclaracoes.values().toArray()[i];
-
-			if(token.getSimbolo().equals(var) && token.getCodigo() <= nivel) {
-				return true;
-			}
-
-		}
-		return false;
-	}
 
 	public boolean nativeSymbols(Character s) {
 		return " 	;,+-/*()[]$".indexOf(s) != -1;
@@ -148,26 +134,61 @@ public class Automatos {
 		simbols.clear();
 		erros.clear();
 	}
+	
+	private TokenSemantico isDeclared(String var, Integer nivel) {
+		TokenSemantico token = null;
+		for(Integer i = 0; i < tabelaDeclaracoes.size(); i++) {
+
+			token = tabelaDeclaracoes.get(i);
+
+			if(token.getSimbolo().equals(var) && token.getCodigo() <= nivel) {
+				return token;
+			}
+
+		}
+		return null;
+	}
+	
+	private boolean validaTipo(TokenX token) {
+		
+		if(token != null) {
+			//TODO validação
+			
+			erros.add(new Erro("A variavel ja esta declarada", "Semantico", linha));
+
+			return true;			
+		}else {
+			erros.add(new Erro("A variavel não esta declarada", "Semantico", linha));
+			return false;
+		}
+		
+	}
 
 	public void analiseSemantica() {
 
 		Integer nivel = 0;
+		Integer categoria = 0;
 
 		ArrayList<Token> lastTokens = new ArrayList<Token>();
 		Token lastToken = null;
 
 		for(Token simbolo: listTokens) {
+			
+			linha = lastToken!=null ? lastToken.getLinha() : 0;
 
 			switch (simbolo.getCodigo()) {
+			case 5: categoria = 5;
+			break;
+			case 36: categoria = categoria==5? 36 : categoria;
+			break;
+			
 			case 25: lastToken = simbolo;				
 			break;
-			case 38: 	if(!isDeclared(lastToken.getSimbolo(), nivel)) {
-							erros.add(new Erro("A variavel não esta declarada", "Semantico", lastToken.getLinha()));
+			case 38: 	if(!validaTipo(isDeclared(lastToken.getSimbolo(), nivel))) {
 						} 
 			break;
 			case 39:	lastTokens.add(lastToken);
-						if(isDeclared(lastToken.getSimbolo(), nivel)) {
-							erros.add(new Erro("A variavel ja esta declarada", "Semantico", lastToken.getLinha()));
+						if(validaTipo(isDeclared(lastToken.getSimbolo(), nivel))) {
 						}else {
 							insertTokens(lastTokens, nivel);
 						}
@@ -191,7 +212,7 @@ public class Automatos {
 		
 		for(Token token: tokens) {
 			
-			tabelaDeclaracoes.put(token.getSimbolo(), nivel.toString());
+			//tabelaDeclaracoes.add(token.getSimbolo(), nivel.toString());
 			
 		}		
 		tokens.clear();
