@@ -163,18 +163,19 @@ public class Automatos {
 		}
 		
 	}
+	
 
 	public void analiseSemantica() {
 
 		Integer nivel = 0;
 		Integer categoria = 0;
 
-		ArrayList<Token> lastTokens = new ArrayList<Token>();
-		Token lastToken = null;
+		ArrayList<TokenSemantico> lastTokens = new ArrayList<TokenSemantico>();
+		TokenSemantico lastToken = null;
 
 		for(Token simbolo: listTokens) {
 			
-			linha = lastToken!=null ? lastToken.getLinha() : 0;
+			linha = simbolo.getLinha();
 
 			switch (simbolo.getCodigo()) {
 			case 5: categoria = 5;
@@ -182,7 +183,7 @@ public class Automatos {
 			case 36: categoria = categoria==5? 36 : categoria;
 			break;
 			
-			case 25: lastToken = simbolo;				
+			case 25: lastToken = new TokenSemantico();				
 			break;
 			case 38: 	if(!validaTipo(isDeclared(lastToken.getSimbolo(), nivel))) {
 						} 
@@ -208,9 +209,9 @@ public class Automatos {
 
 	}
 	
-	private void insertTokens(ArrayList<Token> tokens, Integer nivel) {
+	private void insertTokens(ArrayList<TokenSemantico> tokens, Integer nivel) {
 		
-		for(Token token: tokens) {
+		for(TokenSemantico token: tokens) {
 			
 			//tabelaDeclaracoes.add(token.getSimbolo(), nivel.toString());
 			
