@@ -2,6 +2,7 @@ package Compilador;
 
 import java.awt.Color;
 
+import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -28,19 +29,20 @@ public class ColorPane extends JTextPane {
 				System.out.println(onError? "true" : "false");
 				ide.editor.setBackground(Color.white);
 				if(onError) {
-					
 					ColorPane editor = ide.editor;
 					try {
-					String text = editor.getText();
-					System.out.println("printou o texto"  +  text);
-					editor.setText(null);
-					editor.append(Color.white, text, false);
+//					String text = editor.getText();
+//					System.out.println("printou o texto"  +  text);
+//					editor.setText(null);
+//					editor.append(Color.white, text, false);
+					ide.newText(null, true);
 					onError = false;
 					}
 					catch (Exception e2) {
 						// TODO: handle exception
 					}
 				}
+
 			}
 
 		});
@@ -117,7 +119,7 @@ public class ColorPane extends JTextPane {
 	}
 
 
-	// Função de append, "concatenar string no textpane"
+	// Função de ', "concatenar string no textpane"
 	public void append(Color cor, String text, Boolean quebraLinha) {
 		AttributeSet aset = cont.addAttribute(SimpleAttributeSet.EMPTY,StyleConstants.Foreground, cor);
 		AttributeSet aset3 = cont.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Background, Color.white);

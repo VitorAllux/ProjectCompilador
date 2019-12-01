@@ -17,9 +17,11 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
 @SuppressWarnings("serial")
@@ -45,7 +47,8 @@ public class IDE extends JFrame {
 	private Automatos automato;
 	public IDE ide = this;
 	private String dir = null;
-	
+	public int linerror;
+
 	File arq;
 
 	public IDE() {
@@ -234,23 +237,23 @@ public class IDE extends JFrame {
 						chooser.setCurrentDirectory(new File("Documentos"));
 					}
 					if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-							System.out.println(chooser.getName());	
-							arq = chooser.getSelectedFile(); 
-							dir = arq.getAbsolutePath();
-							if (chooser.getSelectedFile().exists()) {
-								JOptionPane.showMessageDialog(null, "Arquivo com o mesmo nome já existente");
-							} else {
-								try {
-									arq.createNewFile();
-									FileManipulator.fileWrite(arq.getAbsolutePath(), editor.getText());
-								} catch (IOException e1) {
-									// TODO Auto-generated catch block
-									e1.printStackTrace();
-								}
+						System.out.println(chooser.getName());	
+						arq = chooser.getSelectedFile(); 
+						dir = arq.getAbsolutePath();
+						if (chooser.getSelectedFile().exists()) {
+							JOptionPane.showMessageDialog(null, "Arquivo com o mesmo nome já existente");
+						} else {
+							try {
+								arq.createNewFile();
+								FileManipulator.fileWrite(arq.getAbsolutePath(), editor.getText());
+							} catch (IOException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
 							}
-
 						}
+
 					}
+				}
 			}
 		});
 
@@ -442,6 +445,15 @@ public class IDE extends JFrame {
 		return lista;
 	}
 
+	public void rolarScroll(int linha) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				JScrollBar temp = scrollPane3.getVerticalScrollBar();
+				temp.setValue(linha * 10);
+			}
+		});
+	}
+
 	// PRINT ERROR CONSOLE
 	public void printError(ArrayList<Erro> erros) {
 		for (Erro bug : erros) {
@@ -451,29 +463,39 @@ public class IDE extends JFrame {
 			btnBuild.setEnabled(false);
 			console.append(Color.red,
 					"Erro: " + bug.getMsgError()
-							+ (bug.getTipo().equals("sintatico")
-									? ("     Encontrado: [" + listA.get(0).getSimbolo() + "] Esperado: ["
-											+ listX.get(0).getSimbolo() + "]     ")
+					+ (bug.getTipo().equals("sintatico")
+							? ("     Encontrado: [" + listA.get(0).getSimbolo() + "] Esperado: ["
+									+ listX.get(0).getSimbolo() + "]     ")
 									: "")
-							+ " linha: " + bug.getLinha() + "\n",
+					+ " linha: " + bug.getLinha() + "\n",
 					true);
+			linerror = bug.getLinha();
 		}
 	}
 
 	// SET NEW TEXT EDITOR
-	public void newText(ArrayList<Erro> erros) {
-		ArrayList<String> textList = getEditorText();
-		editor.setText(null);
-		int i = 1;
-		for (String text : textList) {
-			if (i == erros.get(0).getLinha()) {
-				editor.appendError(Color.lightGray, text + "\n");
-			} else {
-				editor.append(Color.white, text, true);
+	public void newText(ArrayList<Erro> erros, boolean newe) {
+		if(!newe) {
+			ArrayList<String> textList = getEditorText();
+			editor.setText(null);
+			int i = 1;
+			for (String text : textList) {
+				if (i == erros.get(0).getLinha()) {
+					editor.appendError(Color.lightGray, text + "\n");
+				} else {
+					editor.append(Color.white, text, true);
 
+				}
+				i++;
 			}
-			i++;
 		}
+
+		else {
+			String aux = editor.getText();
+			editor.setText(null);
+			editor.append(Color.white, aux, false);
+		}
+		ide.rolarScroll(linerror);
 	}
 
 }

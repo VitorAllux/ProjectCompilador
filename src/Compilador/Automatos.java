@@ -74,7 +74,7 @@ public class Automatos {
 		}
 		if(!erros.isEmpty()) {				
 			frame.printError(erros);
-			frame.newText(erros);
+			frame.newText(erros, false);
 		}else {
 			if(listX.isEmpty()) {
 				analiseSemantica();				
@@ -336,7 +336,7 @@ public class Automatos {
 
 		if(!erros.isEmpty()) {
 			frame.printError(erros);
-			frame.newText(erros);
+			frame.newText(erros, false);
 			return null;
 		}else {
 			return simbols;
