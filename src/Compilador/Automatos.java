@@ -134,7 +134,7 @@ public class Automatos {
 		simbols.clear();
 		erros.clear();
 	}
-	
+
 	private TokenSemantico isDeclared(String var, Integer nivel) {
 		TokenSemantico token = null;
 		for(Integer i = 0; i < tabelaDeclaracoes.size(); i++) {
@@ -148,12 +148,12 @@ public class Automatos {
 		}
 		return null;
 	}
-	
+
 	private boolean validaTipo(TokenX token) {
-		
+
 		if(token != null) {
 			//TODO validação
-			
+
 			erros.add(new Erro("A variavel ja esta declarada", "Semantico", linha));
 
 			return true;			
@@ -161,42 +161,65 @@ public class Automatos {
 			erros.add(new Erro("A variavel não esta declarada", "Semantico", linha));
 			return false;
 		}
-		
+
 	}
-	
+
 
 	public void analiseSemantica() {
 
-		Integer nivel = 0;
+		ArrayList<ArrayList<TokenSemantico>> tabelasDeclaracoes = new ArrayList<ArrayList<TokenSemantico>>();
+
+
+		Integer codigo = 0, nivel = 0, indexTabela = -1;
 		Integer categoria = 0;
+		boolean novaTabela = false, endProc = false;
 
 		ArrayList<TokenSemantico> lastTokens = new ArrayList<TokenSemantico>();
 		TokenSemantico lastToken = null;
 
 		for(Token simbolo: listTokens) {
-			
-			linha = simbolo.getLinha();
 
-			switch (simbolo.getCodigo()) {
+			linha = simbolo.getLinha();
+			codigo = simbolo.getCodigo();
+
+			if(endProc && (codigo != 3) && (codigo != 6)) {
+				endProc = false;				
+			}			
+			
+			switch (codigo) {
+			case 1: categoria = 5;
+			novaTabela = true;
+			indexTabela++;
+			break;
 			case 5: categoria = 5;
+			novaTabela = true;
+			indexTabela++;
 			break;
 			case 36: categoria = categoria==5? 36 : categoria;
 			break;
-			
-			case 25: lastToken = new TokenSemantico();				
+
+			case 25: if(novaTabela) {
+				lastTokens.clear();
+				lastTokens.add(new TokenSemantico(simbolo, 0, "PROCEDURE"));
+				insertTokens(lastTokens, nivel);
+				novaTabela = false;
+			}else {
+				lastToken = new TokenSemantico();				
+			}
 			break;
-			case 38: 	if(!validaTipo(isDeclared(lastToken.getSimbolo(), nivel))) {
-						} 
+			case 38: if(!validaTipo(isDeclared(lastToken.getSimbolo(), nivel))) {
+			} 
 			break;
 			case 39:	lastTokens.add(lastToken);
-						if(validaTipo(isDeclared(lastToken.getSimbolo(), nivel))) {
-						}else {
-							insertTokens(lastTokens, nivel);
-						}
+			if(validaTipo(isDeclared(lastToken.getSimbolo(), nivel))) {
+			}else {
+				insertTokens(lastTokens, nivel);
+			}
 			break;
 			case 47: lastTokens.add(lastToken);
-				break;
+			break;
 			case 6: nivel++;
+					endProc = true;
 			break;
 			case 7: nivel--;
 			break;
@@ -205,19 +228,21 @@ public class Automatos {
 				break;
 			}
 
+
+
 		}
 
 	}
-	
+
 	private void insertTokens(ArrayList<TokenSemantico> tokens, Integer nivel) {
-		
+
 		for(TokenSemantico token: tokens) {
-			
+
 			//tabelaDeclaracoes.add(token.getSimbolo(), nivel.toString());
-			
+
 		}		
 		tokens.clear();
-		
+
 	}
 
 	public Stack<Token> splitSimbols(ArrayList<String> list){

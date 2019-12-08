@@ -8,9 +8,11 @@ public class TokenSemantico extends TokenX{
 	public TokenSemantico() {
 	}
 	
-	public TokenSemantico(Token simbolo, Integer nivel, String Categoria) {
+	public TokenSemantico(Token simbolo, Integer nivel, String categoria) {
 		
-		
+		this.setSimbolo(simbolo.getSimbolo());
+		this.nivel = nivel;
+		this.categoria = categoria;
 		
 	}	
 	
