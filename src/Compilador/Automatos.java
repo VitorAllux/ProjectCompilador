@@ -135,16 +135,18 @@ public class Automatos {
 		erros.clear();
 	}
 
-	private TokenSemantico isDeclared(String var, Integer nivel, Integer index) {
+	private TokenSemantico isDeclared(ArrayList<TokenSemantico> tokens, Integer nivel, Integer index) {
 		TokenSemantico token = null;
-		for(Integer i = 0; i < tabelasDeclaracoes.get(index).size(); i++) {
+		for(TokenSemantico tokenOri: tokens) {
+			for(Integer i = 0; i < tabelasDeclaracoes.get(index).size(); i++) {
 
-			token = tabelasDeclaracoes.get(index).get(i);
+				token = tabelasDeclaracoes.get(index).get(i);
 
-			if(token.getSimbolo().equals(var) && token.getCodigo() <= nivel) {
-				return token;
+				if(token.getSimbolo().equals(tokenOri.getSimbolo()) && token.getCodigo() <= nivel) {
+					return token;
+				}
+
 			}
-
 		}
 		return null;
 	}
@@ -202,19 +204,30 @@ public class Automatos {
 						insertTokens(lastTokens, indexTabela);
 						novaTabela = false;
 				 	 }else {
-						lastToken = new TokenSemantico();				
+						lastToken = new TokenSemantico(simbolo, nivel, "VARIAVEL");				
 					 }
 			break;
-			case 38: if(!validaTipo(isDeclared(lastToken.getSimbolo(), nivel, indexTabela))) {
+			case 38: if(!validaTipo(isDeclared(lastTokens, nivel, indexTabela))) {
 					 } 
+					 lastTokens.clear();
 			break;
-			case 39: lastTokens.add(lastToken);
-					 if(validaTipo(isDeclared(lastToken.getSimbolo(), nivel, indexTabela))) {
+			case 39: guardaTokens(lastTokens, lastToken);
+					 if(validaTipo(isDeclared(lastTokens, nivel, indexTabela))) {
 					 }else {
 						 insertTokens(lastTokens, indexTabela);
   					 }
+					 lastTokens.clear();
 			break;
-			case 47: lastTokens.add(lastToken);
+			case 40: guardaTokens(lastTokens, lastToken);
+					 if(validaTipo(isDeclared(lastTokens, nivel, indexTabela))) {
+					 }else {
+						 insertTokens(lastTokens, indexTabela);
+					 }
+					 lastTokens.clear();
+			break;
+			case 46: guardaTokens(lastTokens, lastToken);
+			break;
+			case 47: isDeclared(lastTokens, nivel, indexTabela);
 			break;
 			case 6: nivel++;
 					endProc = true;
@@ -227,6 +240,15 @@ public class Automatos {
 			}
 		}
 
+	}
+	
+	private void guardaTokens(ArrayList<TokenSemantico> tokens, TokenSemantico token){
+		
+		if (token != null) {
+			tokens.add(token);
+			token = null;
+		}
+		
 	}
 
 	private void insertTokens(ArrayList<TokenSemantico> tokens, Integer index) {
