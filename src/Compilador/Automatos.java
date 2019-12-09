@@ -8,6 +8,7 @@ public class Automatos {
 
 	private Stack<Token> simbols = new Stack<Token>(), listTokens;
 	private ArrayList<TokenSemantico> tabelaDeclaracoes = new ArrayList<TokenSemantico>();
+	private ArrayList<ArrayList<TokenSemantico>> tabelasDeclaracoes = new ArrayList<ArrayList<TokenSemantico>>();
 	public ArrayList<Erro> erros = new ArrayList<Erro>();
 	private int linha;
 	private IDE frame;
@@ -91,7 +92,6 @@ public class Automatos {
 		return tabelaParsing.get(cordenate);		
 	}
 
-
 	private void addInStack(String str, int linha, boolean literal) {		
 		if(literal) {
 			System.out.println("procurou '"+str+"' result 48");
@@ -135,11 +135,11 @@ public class Automatos {
 		erros.clear();
 	}
 
-	private TokenSemantico isDeclared(String var, Integer nivel) {
+	private TokenSemantico isDeclared(String var, Integer nivel, Integer index) {
 		TokenSemantico token = null;
-		for(Integer i = 0; i < tabelaDeclaracoes.size(); i++) {
+		for(Integer i = 0; i < tabelasDeclaracoes.get(index).size(); i++) {
 
-			token = tabelaDeclaracoes.get(i);
+			token = tabelasDeclaracoes.get(index).get(i);
 
 			if(token.getSimbolo().equals(var) && token.getCodigo() <= nivel) {
 				return token;
@@ -167,9 +167,6 @@ public class Automatos {
 
 	public void analiseSemantica() {
 
-		ArrayList<ArrayList<TokenSemantico>> tabelasDeclaracoes = new ArrayList<ArrayList<TokenSemantico>>();
-
-
 		Integer codigo = 0, nivel = 0, indexTabela = -1;
 		Integer categoria = 0;
 		boolean novaTabela = false, endProc = false;
@@ -188,33 +185,34 @@ public class Automatos {
 			
 			switch (codigo) {
 			case 1: categoria = 5;
-			novaTabela = true;
-			indexTabela++;
+					novaTabela = true;
+					indexTabela++;
 			break;
 			case 5: categoria = 5;
-			novaTabela = true;
-			indexTabela++;
+					novaTabela = true;
+					indexTabela++;
 			break;
 			case 36: categoria = categoria==5? 36 : categoria;
 			break;
 
 			case 25: if(novaTabela) {
-				lastTokens.clear();
-				lastTokens.add(new TokenSemantico(simbolo, 0, "PROCEDURE"));
-				insertTokens(lastTokens, nivel);
-				novaTabela = false;
-			}else {
-				lastToken = new TokenSemantico();				
-			}
+						tabelasDeclaracoes.add(tabelaDeclaracoes);
+						lastTokens.clear();
+						lastTokens.add(new TokenSemantico(simbolo, indexTabela, "PROCEDURE"));
+						insertTokens(lastTokens, indexTabela);
+						novaTabela = false;
+				 	 }else {
+						lastToken = new TokenSemantico();				
+					 }
 			break;
-			case 38: if(!validaTipo(isDeclared(lastToken.getSimbolo(), nivel))) {
-			} 
+			case 38: if(!validaTipo(isDeclared(lastToken.getSimbolo(), nivel, indexTabela))) {
+					 } 
 			break;
-			case 39:	lastTokens.add(lastToken);
-			if(validaTipo(isDeclared(lastToken.getSimbolo(), nivel))) {
-			}else {
-				insertTokens(lastTokens, nivel);
-			}
+			case 39: lastTokens.add(lastToken);
+					 if(validaTipo(isDeclared(lastToken.getSimbolo(), nivel, indexTabela))) {
+					 }else {
+						 insertTokens(lastTokens, indexTabela);
+  					 }
 			break;
 			case 47: lastTokens.add(lastToken);
 			break;
@@ -227,18 +225,15 @@ public class Automatos {
 			default:
 				break;
 			}
-
-
-
 		}
 
 	}
 
-	private void insertTokens(ArrayList<TokenSemantico> tokens, Integer nivel) {
+	private void insertTokens(ArrayList<TokenSemantico> tokens, Integer index) {
 
 		for(TokenSemantico token: tokens) {
 
-			//tabelaDeclaracoes.add(token.getSimbolo(), nivel.toString());
+			tabelasDeclaracoes.get(index).add(token);
 
 		}		
 		tokens.clear();
